@@ -11,8 +11,8 @@ public class UserImpl implements User{
     private Registry myRegistry;
     private RegistrarImpl registrar;
 
-    private int telefoonnummer;
-    private String naam;
+    private int phone;
+    private String name;
     private String token;
     private String dataString;
     private ArrayList<String> userTokens = new ArrayList<>();
@@ -21,8 +21,8 @@ public class UserImpl implements User{
 
     public UserImpl(){}
     public UserImpl(String naam, int nummer){
-        this.naam=naam;
-        this.telefoonnummer =nummer;
+        this.name =naam;
+        this.phone =nummer;
         this.userLogs=new ArrayList<>();
         this.userTokens=new ArrayList<>();
     }
@@ -40,28 +40,28 @@ public class UserImpl implements User{
         }
     }
     // Methodes voor als klant binnengaat
-    public void sendCapsule(){
+    public void enterCateringFacility(){
 
     }
     // Methodes voor als klant weggaat
-    public void exitCatering(){
+    public void exitCateringFacility(){
 
     }
     // Methodes voor als klant in contact was met covid
-    public void fetchCovidLog(){
+    public void fetchLogs(){
 
     }
     //Getters en Setters
-    public int getTelefoonnummer() {
-        return telefoonnummer;
+    public int getPhone() {
+        return phone;
     }
-    public String getNaam() {
-        return naam;
+    public String getName() {
+        return name;
     }
-    public void setTelefoonnummer(int telefoonnummer) {
-        this.telefoonnummer = telefoonnummer;
+    public void setPhone(int phone) {
+        this.phone = phone;
     }
-    public void setNaam(String naam) {
-        this.naam = naam;
+    public void setName(String name) {
+        this.name = name;
     }
 }
