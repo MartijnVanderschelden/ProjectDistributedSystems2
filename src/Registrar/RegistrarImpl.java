@@ -1,17 +1,23 @@
 package Registrar;
 
+import CateringFacility.CateringFacilityImpl;
+import User.UserImpl;
+
 import javax.crypto.KeyGenerator;
 import javax.crypto.SecretKey;
 import javax.crypto.spec.SecretKeySpec;
 import java.rmi.RemoteException;
 import java.rmi.server.UnicastRemoteObject;
 import java.security.NoSuchAlgorithmException;
+import java.security.PublicKey;
 import java.time.LocalDate;
 import java.util.Base64;
 
 public class RegistrarImpl implements Registrar{
     SecretKey s;
     LocalDate date;
+    UserImpl user;
+    CateringFacilityImpl cateringFacility;
 
     public RegistrarImpl() throws RemoteException, NoSuchAlgorithmException {
         UnicastRemoteObject.exportObject(this, 0);
@@ -45,5 +51,15 @@ public class RegistrarImpl implements Registrar{
     @Override
     public void nextDay() throws RemoteException {
         this.date = date.plusDays(1);
+    }
+
+    @Override
+    public PublicKey enrollUser(int telefoonnummer) throws RemoteException {
+        return null;
+    }
+
+    @Override
+    public SecretKey enrollFacility(String cf) throws RemoteException {
+        return null;
     }
 }

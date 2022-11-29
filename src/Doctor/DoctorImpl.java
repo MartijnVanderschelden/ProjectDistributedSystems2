@@ -13,4 +13,8 @@ public class DoctorImpl implements Doctor{
     public void connectToServer() throws RemoteException {
 
     }
+    @Override
+    public int getId() throws RemoteException {
+        return doctorId;
+    }
 }
