@@ -1,5 +1,6 @@
 package User;
 
+import Registrar.Registrar;
 import Registrar.RegistrarImpl;
 
 import java.rmi.RemoteException;
@@ -8,8 +9,8 @@ import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 
 public class UserImpl implements User{
-    private Registry myRegistry;
-    private RegistrarImpl registrar;
+    private Registry registry;
+    private Registrar registrar;
 
     private int phone;
     private String name;
@@ -28,13 +29,11 @@ public class UserImpl implements User{
     }
 
     @Override
-    public void connectToServer() throws RemoteException {
+    public void start() throws RemoteException {
         try {
-            // fire to localhostport 1099
-            myRegistry = LocateRegistry.getRegistry("localhost", 1099);
-            // search for CounterService
-            registrar = (RegistrarImpl) myRegistry.lookup("Registrar");
-
+            registry = LocateRegistry.getRegistry("localhost", 1099);
+            registrar = (Registrar) registry.lookup("Registrar");
+            System.out.println("User started");
         } catch (Exception e) {
             e.printStackTrace();
         }

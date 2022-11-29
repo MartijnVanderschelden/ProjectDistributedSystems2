@@ -13,8 +13,10 @@ import java.rmi.server.UnicastRemoteObject;
 public class CateringFacilityImpl implements CateringFacility, Remote {
     private Registrar registrar;
     private String CF;
-    private SecretKey sk;
     private int phone;
+    private SecretKey sk;
+    private SecretKey skDaily;
+    private String dailyPseudonym;
 
     public CateringFacilityImpl() throws RemoteException {
         UnicastRemoteObject.exportObject(this, 0);
@@ -25,16 +27,22 @@ public class CateringFacilityImpl implements CateringFacility, Remote {
         registrar = (Registrar) registry.lookup("Registrar");
         System.out.println("Catering Facility started");
     }
-    //Methode om QR code aan te maken
-    public void createQR(){
+    //Methode om dagelijkse secret key te ontvangen
+    public void getDailySecretKey(){
 
     }
-    //Methode om dagelijkse
     //Methode om dagelijke pseudonym te krijgen
     public void getDailyPseudonym(){
 
     }
+    //Methode om QR code aan te maken
+    public void createQR(){
 
+    }
+    //Methode om gebruiker, die deze QR code scant, te registeren
+    public void registerUser(){
+
+    }
     //Setters en getters
     public void setCF(String CF) {
         this.CF = CF;

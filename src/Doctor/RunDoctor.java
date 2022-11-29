@@ -3,8 +3,8 @@ package Doctor;
 import java.rmi.RemoteException;
 
 public class RunDoctor {
-    public void main(String[]args) throws RemoteException {
+    public static void main(String[]args) throws RemoteException {
         DoctorImpl doctor = new DoctorImpl();
-        doctor.connectToServer();
+        doctor.start();
     }
 }

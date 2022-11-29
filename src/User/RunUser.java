@@ -7,6 +7,6 @@ public class RunUser{
         UserImpl user = new UserImpl();
         user.setName("Jonas");
         user.setPhone(468204065);
-        user.connectToServer();
+        user.start();
     }
 }
