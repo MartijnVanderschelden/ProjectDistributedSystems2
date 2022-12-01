@@ -56,6 +56,9 @@ public class RegistrarImpl implements Registrar{
         //signatureVerify.initVerify(keyPair.getPublic());
         //signatureVerify.update(Byte.parseByte(phone));
     }
+    public void clearTokens(UserImpl user){
+        user.getUserTokens().clear();
+    }
 
     @Override
     public void generateSecretKey() throws RemoteException, NoSuchAlgorithmException {
@@ -74,8 +77,8 @@ public class RegistrarImpl implements Registrar{
     public void nextDay() throws RemoteException {
         this.date = date.plusDays(1);
         //bij nieuwe dag moeten users nieuwe tokens krijgen
-        for(User u: users){
-
+        for(UserImpl u: users){
+            clearTokens(u);
         }
     }
 
