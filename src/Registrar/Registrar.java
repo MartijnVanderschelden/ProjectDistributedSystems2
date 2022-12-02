@@ -1,6 +1,6 @@
 package Registrar;
 
-import User.UserImpl;
+import User.User;
 
 import java.rmi.Remote;
 import java.rmi.RemoteException;
@@ -13,8 +13,6 @@ import java.util.ArrayList;
 public interface Registrar extends Remote {
     void generateSecretKey() throws RemoteException, NoSuchAlgorithmException;
     LocalDate getDate() throws RemoteException;
-    void nextDay() throws RemoteException;
+    void nextDay() throws RemoteException, NoSuchAlgorithmException, SignatureException, InvalidKeyException;
     //methodes voor user
-    void connectUser(UserImpl user) throws RemoteException;
-    ArrayList<byte[]> enrollUser(String phone) throws RemoteException, NoSuchAlgorithmException, SignatureException, InvalidKeyException;
-}
+    void enrollUser(User user) throws RemoteException, NoSuchAlgorithmException, SignatureException, InvalidKeyException;}

@@ -14,7 +14,9 @@ import java.rmi.AlreadyBoundException;
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
+import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
+import java.security.SignatureException;
 import java.time.LocalDate;
 
 public class RunRegistrar extends Application {
@@ -38,7 +40,7 @@ public class RunRegistrar extends Application {
         count = 0;
     }
 
-    public void pushButton(ActionEvent event) throws NoSuchAlgorithmException, RemoteException, AlreadyBoundException {
+    public void pushButton(ActionEvent event) throws NoSuchAlgorithmException, RemoteException, AlreadyBoundException, SignatureException, InvalidKeyException {
         if(count == 0) {
             startRegistrar();
             button.setText("Next day");
@@ -58,7 +60,7 @@ public class RunRegistrar extends Application {
         dateLabel.setText(registrar.getDate().toString());
     }
 
-    public void nextDay() throws RemoteException {
+    public void nextDay() throws RemoteException, NoSuchAlgorithmException, SignatureException, InvalidKeyException {
         registrar.nextDay();
         dateLabel.setText(registrar.getDate().toString());
     }

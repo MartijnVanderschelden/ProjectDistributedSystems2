@@ -1,7 +1,7 @@
 package Registrar;
 
 import User.User;
-import User.UserImpl;
+
 import javax.crypto.KeyGenerator;
 import javax.crypto.SecretKey;
 import javax.crypto.spec.SecretKeySpec;
@@ -9,20 +9,26 @@ import java.rmi.RemoteException;
 import java.rmi.server.UnicastRemoteObject;
 import java.security.NoSuchAlgorithmException;
 import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.Base64;
+import java.util.*;
 import java.security.*;
 
-public class RegistrarImpl implements Registrar{
+public class RegistrarImpl extends UnicastRemoteObject implements Registrar{
     private SecretKey s;
     private LocalDate date;
     private SecretKey dailySecretKey;
-    ArrayList<UserImpl> users = new ArrayList<UserImpl>();
+    private ArrayList<User> users = new ArrayList<User>();
+    //Key=phone
+    private Map<String, ArrayList<byte[]>> userTokensMap;
+    private Map<String, ArrayList<byte[]>> signedTokens;
+
 
     public RegistrarImpl() throws RemoteException, NoSuchAlgorithmException {
-        UnicastRemoteObject.exportObject(this, 0);
+        //UnicastRemoteObject.exportObject(this, 0);
         this.date = LocalDate.now();
         generateSecretKey();
+        users = new ArrayList<>();
+        userTokensMap = new HashMap<>();
+        signedTokens = new HashMap<>();
     }
 
     public static String convertSecretKeyToString(SecretKey secretKey) {
@@ -56,9 +62,7 @@ public class RegistrarImpl implements Registrar{
         //signatureVerify.initVerify(keyPair.getPublic());
         //signatureVerify.update(Byte.parseByte(phone));
     }
-    public void clearTokens(UserImpl user){
-        user.getUserTokens().clear();
-    }
+
 
     @Override
     public void generateSecretKey() throws RemoteException, NoSuchAlgorithmException {
@@ -74,20 +78,29 @@ public class RegistrarImpl implements Registrar{
     }
 
     @Override
-    public void nextDay() throws RemoteException {
+    public void nextDay() throws RemoteException, NoSuchAlgorithmException, SignatureException, InvalidKeyException {
         this.date = date.plusDays(1);
         //bij nieuwe dag moeten users nieuwe tokens krijgen
-        for(UserImpl u: users){
-            clearTokens(u);
+        for(User u : users) {
+            userTokensMap.get(u.getPhone()).clear();
+            for(int i=0;i<48;i++) {
+                ArrayList<byte[]> generatedTokens = generateUserTokens(u.getPhone());
+                userTokensMap.get(u.getPhone()).add(generatedTokens.get(i));
+                u.retrieveTokens(generatedTokens);
+            }
+
         }
     }
 
     @Override
-    public void connectUser(UserImpl user) throws RemoteException {
+    public void enrollUser(User user) throws RemoteException, NoSuchAlgorithmException, SignatureException, InvalidKeyException {
         users.add(user);
-    }
-    @Override
-    public ArrayList<byte[]> enrollUser(String phone) throws RemoteException, NoSuchAlgorithmException, SignatureException, InvalidKeyException {
-        return generateUserTokens(phone);
+        System.out.println(user.getName()+ " has been enrolled.");
+        // 48 Tokens toekennen aan user en in map steken
+        ArrayList<byte[]> generatedTokens = generateUserTokens(user.getPhone());
+        for(int i=0; i<48; i++){
+            userTokensMap.put(user.getPhone(),generatedTokens);
+        }
+        user.retrieveTokens(generatedTokens);
     }
 }

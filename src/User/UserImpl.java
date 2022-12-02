@@ -9,51 +9,46 @@ import java.util.ArrayList;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 import java.rmi.server.UnicastRemoteObject;
+import java.util.List;
 
 
 public class UserImpl extends UnicastRemoteObject implements User {
     private Registry registry;
     private Registrar registrar;
     private MixingProxy mixingProxy;
-    private Registry registryMixingProxy;
     private MatchingService matchingService;
-    private Registry registryMatchingService;
+
 
     private String phone;
     private String name;
-    private String token;
-    private String dataString;
+    private String QRCode;
     private ArrayList<byte[]> userTokens = new ArrayList<>();
     private ArrayList<String> userLogs = new ArrayList<>();
 
 
-    public UserImpl() throws RemoteException{}
-    public UserImpl(String name, String phone) throws RemoteException{
-        this.name =name;
-        this.phone = phone;
-        this.userLogs=new ArrayList<>();
-        this.userTokens=new ArrayList<>();
+    public UserImpl(String name, String phone, Registrar registrar) throws RemoteException{
+        this.name=name;
+        this.phone=phone;
+        this.registrar=registrar;
+        this.userTokens=new ArrayList<byte[]>();
+    }
+    // Interface methods
+    @Override
+    public String getPhone() throws RemoteException {
+        return phone;
     }
 
     @Override
-    public void start() throws RemoteException {
-        try {
-            registry = LocateRegistry.getRegistry("localhost", 1099);
-            registrar = (Registrar) registry.lookup("Registrar");
-            System.out.println("User started");
-            //registrar.connectUser(this);
-            userTokens = registrar.enrollUser(this.phone);
-
-            /*registryMatchingService = LocateRegistry.getRegistry("localhost", 1098);
-            matchingService = (MatchingService) registryMatchingService.lookup("MatchingService");
-
-            registryMixingProxy = LocateRegistry.getRegistry("localhost",1097);
-            mixingProxy = (MixingProxy) registryMixingProxy.lookup("MixingProxy");*/
-
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+    public String getName() throws RemoteException {
+        return name;
     }
+
+    @Override
+    public void retrieveTokens(List<byte[]> userTokens) throws RemoteException {
+        this.userTokens.clear();
+        this.userTokens.addAll(userTokens);
+    }
+
     // Methodes voor als klant binnengaat
     public void enterCateringFacility(){
 
@@ -66,19 +61,9 @@ public class UserImpl extends UnicastRemoteObject implements User {
     public void fetchLogs(){
 
     }
-    //Getters en Setters
-    public String getPhone() {
-        return phone;
+    //Setters en getters
+
+    public ArrayList<byte[]> getUserTokens() {
+        return userTokens;
     }
-    public String getName() {
-        return name;
-    }
-    public void setPhone(String phone) {
-        this.phone = phone;
-    }
-    public void setName(String name) {
-        this.name = name;
-    }
-    public ArrayList<byte[]> getUserTokens() {return userTokens;}
-    public void setUserTokens(ArrayList<byte[]> userTokens) {this.userTokens = userTokens;}
 }

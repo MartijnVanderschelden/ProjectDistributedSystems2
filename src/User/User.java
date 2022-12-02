@@ -2,8 +2,11 @@ package User;
 
 import java.rmi.Remote;
 import java.rmi.RemoteException;
+import java.util.*;
 
 public interface User extends Remote{
-    void start() throws RemoteException;
+    String getPhone() throws RemoteException;
+    String getName() throws RemoteException;
+    void retrieveTokens(List<byte[]> tokens) throws RemoteException;
 }
 
