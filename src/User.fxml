@@ -1,12 +1,14 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<?import javafx.scene.control.Button?>
-<?import javafx.scene.control.Label?>
-<?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
 
 <AnchorPane prefHeight="400.0" prefWidth="600.0" xmlns="http://javafx.com/javafx/11.0.14-internal" xmlns:fx="http://javafx.com/fxml/1" fx:controller="User.RunUser">
     <children>
-        <Button fx:id="button" layoutX="254.0" layoutY="187.0" mnemonicParsing="false" onAction="#pushButton" text="Enroll user" AnchorPane.leftAnchor="254.33" AnchorPane.rightAnchor="254.33" />
-        <Label fx:id="tokensRemainingLabel"/>
+        <Button fx:id="enrollButton" layoutX="254.0" layoutY="187.0" mnemonicParsing="false" onAction="#pushEnrollButton" text="Enroll user" AnchorPane.leftAnchor="254.33" AnchorPane.rightAnchor="254.33" />
+        <Label fx:id="tokensRemainingLabel" />
+        <Button fx:id="scanQrButton" layoutX="254.0" layoutY="300.0" text="Scan QR" AnchorPane.leftAnchor="254.0" AnchorPane.rightAnchor="254.66000000000008"> </Button>
+        <TextField fx:id="qr" layoutX="220.0" layoutY="268.0" />
+
     </children>
 </AnchorPane>

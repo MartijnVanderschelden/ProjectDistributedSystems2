@@ -15,4 +15,6 @@ public interface Registrar extends Remote {
     LocalDate getDate() throws RemoteException;
     void nextDay() throws RemoteException, NoSuchAlgorithmException, SignatureException, InvalidKeyException;
     //methodes voor user
-    void enrollUser(User user) throws RemoteException, NoSuchAlgorithmException, SignatureException, InvalidKeyException;}
+    void enrollUser(User user) throws RemoteException, NoSuchAlgorithmException, SignatureException, InvalidKeyException;
+}
+

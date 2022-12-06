@@ -19,7 +19,7 @@ public class RegistrarImpl extends UnicastRemoteObject implements Registrar{
     private ArrayList<User> users = new ArrayList<User>();
     //Key=phone
     private Map<String, ArrayList<byte[]>> userTokensMap;
-    private Map<String, ArrayList<byte[]>> signedTokens;
+    private Map<String, ArrayList<byte[]>> signedTokensMap;
 
 
     public RegistrarImpl() throws RemoteException, NoSuchAlgorithmException {
@@ -28,7 +28,7 @@ public class RegistrarImpl extends UnicastRemoteObject implements Registrar{
         generateSecretKey();
         users = new ArrayList<>();
         userTokensMap = new HashMap<>();
-        signedTokens = new HashMap<>();
+        signedTokensMap = new HashMap<>();
     }
 
     public static String convertSecretKeyToString(SecretKey secretKey) {

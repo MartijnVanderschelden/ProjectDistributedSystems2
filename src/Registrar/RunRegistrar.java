@@ -36,6 +36,7 @@ public class RunRegistrar extends Application {
         Parent root = FXMLLoader.load(getClass().getClassLoader().getResource("Registrar.fxml"));
         primaryStage.setScene(new Scene(root));
         primaryStage.show();
+        primaryStage.setTitle("Registrar");
 
         count = 0;
     }
