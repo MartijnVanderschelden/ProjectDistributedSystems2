@@ -6,6 +6,7 @@ import Registrar.Registrar;
 
 import java.rmi.RemoteException;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
@@ -53,11 +54,11 @@ public class UserImpl extends UnicastRemoteObject implements User {
 
     @Override
     public void scanQR(UserImpl user, String qr) throws RemoteException {
-        LocalDate ld = LocalDate.now();
+        LocalDateTime ldt = LocalDateTime.now();
         this.QRCode = qr;
-        userLogs.add(ld + " - " + qr);
+        userLogs.add(ldt + " - " + qr);
         // TODO juiste versie met echte QR
-        mixingProxy.retrieveCapsule(user, ld + " - " + user.getUserTokens().get(0) + qr );
+        mixingProxy.retrieveCapsule(user, ldt + "-" + user.getUserTokens().get(0) +"-"+ qr );
         user.getUserTokens().remove(0);
     }
 

@@ -73,10 +73,7 @@ public class RunUser extends Application {
             public void handle(ActionEvent e)
             {
                 try {
-                    LocalDateTime ldt = LocalDateTime.now();
-                    String capsule = ldt + "-" + qr.getText() + "-" + user.getUserTokens().get(0);
-                    user.getUserTokens().remove(0);
-                    mixingProxy.retrieveCapsule(user, capsule);
+                    user.scanQR(user, qr.getText());
                     tokensRemainingLabel.setText("Daily visits remaining: "+ String.valueOf(user.getUserTokens().size()));
                 } catch (RemoteException ex) {
                     ex.printStackTrace();
