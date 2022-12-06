@@ -3,29 +3,41 @@ package CateringFacility;
 import Registrar.Registrar;
 
 import javax.crypto.SecretKey;
-import java.rmi.NotBoundException;
 import java.rmi.Remote;
 import java.rmi.RemoteException;
-import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 import java.rmi.server.UnicastRemoteObject;
 
-public class CateringFacilityImpl implements CateringFacility, Remote {
+public class CateringFacilityImpl extends UnicastRemoteObject implements CateringFacility, Remote {
+    /*
+    Catering gegevens
+     */
+    private long phoneNumber;
+    private long businessNumber; //used as unique identifier CF
+    private String location;
+    private String facilityName;
+
+    /*
+    Servers waar interactie mee gemaakt wordt
+     */
+    private Registry registry;
     private Registrar registrar;
+
+
+    /*
+    Later
+     */
     private String CF;
-    private int phone;
     private SecretKey sk;
     private SecretKey skDaily;
     private String dailyPseudonym;
 
-    public CateringFacilityImpl() throws RemoteException {
-        UnicastRemoteObject.exportObject(this, 0);
-    }
-
-    public void start() throws RemoteException, NotBoundException {
-        Registry registry = LocateRegistry.getRegistry("localhost", 1099);
-        registrar = (Registrar) registry.lookup("Registrar");
-        System.out.println("Catering Facility started");
+    public CateringFacilityImpl(long phoneNumber, long businessNumber, String location, String facilityName, Registrar registrar) throws RemoteException {
+        this.phoneNumber = phoneNumber;
+        this.businessNumber = businessNumber;
+        this.location = location;
+        this.facilityName = facilityName;
+        this.registrar = registrar;
     }
     //Methode om dagelijkse secret key te ontvangen
     public void getDailySecretKey(){
@@ -39,7 +51,7 @@ public class CateringFacilityImpl implements CateringFacility, Remote {
     public void createQR(){
 
     }
-    //Methode om gebruiker, die deze QR code scant, te registeren
+    //Methode om gebruiker, die deze QR code scant, te registreren
     public void registerUser(){
 
     }
@@ -50,10 +62,35 @@ public class CateringFacilityImpl implements CateringFacility, Remote {
     public String getCF() {
         return CF;
     }
-    public void setPhone(int phone) {
-        this.phone = phone;
+    public void setPhoneNumber(long phoneNumber) {
+        this.phoneNumber = phoneNumber;
     }
-    public int getPhone() {
-        return phone;
+    public long getPhoneNumber() {
+        return phoneNumber;
+    }
+
+    /*
+    Getters
+     */
+    public long getBusinessNumber() throws RemoteException{
+        return businessNumber;
+    }
+
+    @Override
+    public String getFacilityName() throws RemoteException {
+        return facilityName;
+    }
+
+    /*
+    toString
+     */
+    @Override
+    public String toString() {
+        return "CateringFacilityImpl{" +
+                "phoneNumber=" + phoneNumber +
+                ", businessNumber=" + businessNumber +
+                ", location='" + location + '\'' +
+                ", facilityName='" + facilityName + '\'' +
+                '}';
     }
 }

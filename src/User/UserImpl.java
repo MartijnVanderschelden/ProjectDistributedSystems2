@@ -8,7 +8,6 @@ import java.rmi.RemoteException;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
-import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 import java.rmi.server.UnicastRemoteObject;
 import java.util.List;
@@ -32,7 +31,7 @@ public class UserImpl extends UnicastRemoteObject implements User {
         this.name=name;
         this.phone=phone;
         this.registrar=registrar;
-        this.userTokens=new ArrayList<byte[]>();
+        this.userTokens=new ArrayList<>();
         this.mixingProxy=mixingProxy;
     }
     // Interface methods
