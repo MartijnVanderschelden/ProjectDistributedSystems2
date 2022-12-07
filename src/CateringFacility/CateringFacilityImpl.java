@@ -15,6 +15,7 @@ import java.security.*;
 import java.security.spec.InvalidKeySpecException;
 import java.time.LocalDate;
 import java.util.Base64;
+import javax.xml.bind.DatatypeConverter;
 
 public class CateringFacilityImpl extends UnicastRemoteObject implements CateringFacility, Remote {
     /*
@@ -121,15 +122,11 @@ public class CateringFacilityImpl extends UnicastRemoteObject implements Caterin
         MessageDigest sha = MessageDigest.getInstance("SHA256");
         sha.update(dailyRandomNumber);
         byte[] h = sha.digest();
-
-        this.QRcode = dailyRandomNumber.toString() + "|" + businessNumber + "|" + h.toString();
+        this.QRcode = DatatypeConverter.printHexBinary(dailyRandomNumber) + "|" + businessNumber + "|" + DatatypeConverter.printHexBinary(h);
         System.out.println("QR code: " + QRcode + " has been generated on: " + date + " at: " + facilityName);
     }
 
 
-    /*
-    toString
-     */
     @Override
     public String toString() {
         return "CateringFacilityImpl{" +
