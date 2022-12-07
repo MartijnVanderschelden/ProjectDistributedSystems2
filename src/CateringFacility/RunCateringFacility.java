@@ -12,10 +12,17 @@ import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
 import javafx.stage.Stage;
 
+import javax.crypto.BadPaddingException;
+import javax.crypto.IllegalBlockSizeException;
+import javax.crypto.NoSuchPaddingException;
+import java.io.IOException;
 import java.rmi.NotBoundException;
-import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
+import java.security.InvalidAlgorithmParameterException;
+import java.security.InvalidKeyException;
+import java.security.NoSuchAlgorithmException;
+import java.security.spec.InvalidKeySpecException;
 
 public class RunCateringFacility extends Application {
     /*
@@ -42,7 +49,7 @@ public class RunCateringFacility extends Application {
         primaryStage.show();
     }
 
-    public void pushButton(ActionEvent event) throws RemoteException, NotBoundException {
+    public void pushButton(ActionEvent event) throws IOException, NotBoundException, NoSuchPaddingException, IllegalBlockSizeException, NoSuchAlgorithmException, BadPaddingException, InvalidKeyException, InvalidAlgorithmParameterException, InvalidKeySpecException {
         if (phoneNumberField.getText().isEmpty() || businessNumberField.getText().isEmpty()
                 || locationField.getText().isEmpty() || facilityNameField.getText().isEmpty()){
             Alert alert = new Alert(Alert.AlertType.ERROR,"Please complete all fields!");

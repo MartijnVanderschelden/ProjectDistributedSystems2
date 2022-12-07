@@ -9,14 +9,19 @@ import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.stage.Stage;
 
+import javax.crypto.BadPaddingException;
+import javax.crypto.IllegalBlockSizeException;
+import javax.crypto.NoSuchPaddingException;
 import java.io.IOException;
 import java.rmi.AlreadyBoundException;
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
+import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.security.SignatureException;
+import java.security.spec.InvalidKeySpecException;
 import java.time.LocalDate;
 
 public class RunRegistrar extends Application {
@@ -41,7 +46,7 @@ public class RunRegistrar extends Application {
         count = 0;
     }
 
-    public void pushButton(ActionEvent event) throws NoSuchAlgorithmException, RemoteException, AlreadyBoundException, SignatureException, InvalidKeyException {
+    public void pushButton(ActionEvent event) throws NoSuchAlgorithmException, IOException, AlreadyBoundException, SignatureException, InvalidKeyException, NoSuchPaddingException, IllegalBlockSizeException, InvalidKeySpecException, BadPaddingException, InvalidAlgorithmParameterException {
         if(count == 0) {
             startRegistrar();
             button.setText("Next day");
@@ -52,16 +57,16 @@ public class RunRegistrar extends Application {
 
     public void startRegistrar() throws NoSuchAlgorithmException, RemoteException, AlreadyBoundException {
         //Instantie registrar aanmaken
+        System.out.println("Registrar started");
         registrar = new RegistrarImpl();
         Registry registry = LocateRegistry.createRegistry(1099);
         registry.bind("Registrar", registrar);
-        System.out.println("Registrar started");
 
         //Initialisatie GUI
         dateLabel.setText(registrar.getDate().toString());
     }
 
-    public void nextDay() throws RemoteException, NoSuchAlgorithmException, SignatureException, InvalidKeyException {
+    public void nextDay() throws IOException, NoSuchAlgorithmException, SignatureException, InvalidKeyException, NoSuchPaddingException, IllegalBlockSizeException, InvalidKeySpecException, BadPaddingException, InvalidAlgorithmParameterException {
         registrar.nextDay();
         dateLabel.setText(registrar.getDate().toString());
     }

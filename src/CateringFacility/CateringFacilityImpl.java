@@ -2,11 +2,19 @@ package CateringFacility;
 
 import Registrar.Registrar;
 
+import javax.crypto.BadPaddingException;
+import javax.crypto.IllegalBlockSizeException;
+import javax.crypto.NoSuchPaddingException;
 import javax.crypto.SecretKey;
+import java.io.IOException;
 import java.rmi.Remote;
 import java.rmi.RemoteException;
 import java.rmi.registry.Registry;
 import java.rmi.server.UnicastRemoteObject;
+import java.security.*;
+import java.security.spec.InvalidKeySpecException;
+import java.time.LocalDate;
+import java.util.Base64;
 
 public class CateringFacilityImpl extends UnicastRemoteObject implements CateringFacility, Remote {
     /*
@@ -18,19 +26,27 @@ public class CateringFacilityImpl extends UnicastRemoteObject implements Caterin
     private String facilityName;
 
     /*
+    Remote opgehaalde gegevens en berekende gegevens
+     */
+    private byte[] dailyPseudonym;
+    private String QRcode;
+
+    /*
     Servers waar interactie mee gemaakt wordt
      */
     private Registry registry;
     private Registrar registrar;
 
-
+    /*
+    Client-side variabelen
+     */
+    private byte[] dailyRandomNumber;
+    private LocalDate date;
     /*
     Later
      */
-    private String CF;
     private SecretKey sk;
     private SecretKey skDaily;
-    private String dailyPseudonym;
 
     public CateringFacilityImpl(long phoneNumber, long businessNumber, String location, String facilityName, Registrar registrar) throws RemoteException {
         this.phoneNumber = phoneNumber;
@@ -38,29 +54,22 @@ public class CateringFacilityImpl extends UnicastRemoteObject implements Caterin
         this.location = location;
         this.facilityName = facilityName;
         this.registrar = registrar;
-    }
-    //Methode om dagelijkse secret key te ontvangen
-    public void getDailySecretKey(){
-
+        this.date = registrar.getDate();
     }
     //Methode om dagelijke pseudonym te krijgen
-    public void getDailyPseudonym(){
 
+    /*
+    public void getDailyPseudonym() throws NoSuchAlgorithmException, InvalidKeySpecException, BadPaddingException, InvalidKeyException, NoSuchPaddingException, IllegalBlockSizeException {
+        this.date = registrar.getDate();
+        dailyPseudonym = registrar.calculateDailyPseudonym(this.businessNumber, this.location);
+        System.out.println("New salt received at facility: " + this.facilityName + " on:" + this.date);
     }
-    //Methode om QR code aan te maken
-    public void createQR(){
 
-    }
+     */
+
     //Methode om gebruiker, die deze QR code scant, te registreren
     public void registerUser(){
 
-    }
-    //Setters en getters
-    public void setCF(String CF) {
-        this.CF = CF;
-    }
-    public String getCF() {
-        return CF;
     }
     public void setPhoneNumber(long phoneNumber) {
         this.phoneNumber = phoneNumber;
@@ -80,6 +89,39 @@ public class CateringFacilityImpl extends UnicastRemoteObject implements Caterin
     public String getFacilityName() throws RemoteException {
         return facilityName;
     }
+
+    @Override
+    public String getLocation() throws RemoteException {
+        return this.location;
+    }
+
+    @Override
+    public void requestDailyPseudonym() throws IOException, NoSuchPaddingException, IllegalBlockSizeException, NoSuchAlgorithmException, InvalidKeySpecException, BadPaddingException, InvalidKeyException, InvalidAlgorithmParameterException {
+        dailyPseudonym = registrar.calculateDailyPseudonym(businessNumber, location);
+        this.date = registrar.getDate();
+        System.out.println("Daily pseudonym has arrived at: " + facilityName);
+    }
+
+    @Override
+    public void generateDailyRandomNumber() throws RemoteException{
+        SecureRandom random = new SecureRandom();
+        byte[] salt = new byte[124];
+        random.nextBytes(salt);
+        System.out.println("Random number generated on: " + date + " at: " + facilityName);
+        dailyRandomNumber = Base64.getEncoder().encodeToString(salt).getBytes();
+    }
+
+    @Override
+    public void generateQRcode() throws NoSuchAlgorithmException{
+        // 1) genereer hash van R_i en nym_(CF, day_i)
+        MessageDigest sha = MessageDigest.getInstance("SHA256");
+        sha.update(dailyRandomNumber);
+        byte[] h = sha.digest();
+
+        this.QRcode = dailyRandomNumber.toString() + "|" + businessNumber + "|" + h.toString();
+        System.out.println("QR code: " + QRcode + " has been generated on: " + date + " at: " + facilityName);
+    }
+
 
     /*
     toString

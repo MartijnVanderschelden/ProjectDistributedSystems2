@@ -4,39 +4,46 @@ import CateringFacility.CateringFacility;
 import User.User;
 
 import javax.crypto.*;
+import javax.crypto.spec.IvParameterSpec;
 import javax.crypto.spec.PBEKeySpec;
 import javax.crypto.spec.SecretKeySpec;
 import java.io.ByteArrayOutputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
+import java.nio.charset.StandardCharsets;
 import java.rmi.RemoteException;
 import java.rmi.server.UnicastRemoteObject;
 import java.security.NoSuchAlgorithmException;
 import java.security.spec.InvalidKeySpecException;
+import java.security.spec.KeySpec;
 import java.time.LocalDate;
 import java.util.*;
 import java.security.*;
 
 public class RegistrarImpl extends UnicastRemoteObject implements Registrar{
     private byte[] s;
+    //2 salt waarden
     private byte[] salt;
+    private byte[] iv;
     private LocalDate date;
 
-    private ArrayList<CateringFacility> cateringFacilities;
+    private List<CateringFacility> cateringFacilities;
     private ArrayList<User> users;
     //Key=phone
     private Map<String, ArrayList<byte[]>> userTokensMap;
+    private Map<Long, ArrayList<byte[]>> pseudonyms;
     private Map<String, ArrayList<byte[]>> signedTokensMap;
 
 
     public RegistrarImpl() throws RemoteException, NoSuchAlgorithmException {
         this.date = LocalDate.now();
-        generateSecretKey();
-        generateSalt();
         users = new ArrayList<>();
         userTokensMap = new HashMap<>();
         signedTokensMap = new HashMap<>();
         cateringFacilities = new ArrayList<>();
+        generateSecretKey();
+        generateSalt();
     }
 
     public static ArrayList<byte[]> generateUserTokens(String phone) throws NoSuchAlgorithmException, InvalidKeyException, SignatureException {
@@ -59,21 +66,12 @@ public class RegistrarImpl extends UnicastRemoteObject implements Registrar{
         //signatureVerify.initVerify(keyPair.getPublic());
         //signatureVerify.update(Byte.parseByte(phone));
     }
-
-
-    @Override
     public void generateSecretKey() throws RemoteException, NoSuchAlgorithmException {
         //https://www.baeldung.com/java-secret-key-to-string#:~:text=There%20are%20two%20ways%20for,Generator%20like%20the%20SecureRandom%20class.
         KeyGenerator keyGenerator = KeyGenerator.getInstance("AES");
         keyGenerator.init(192);
         this.s = keyGenerator.generateKey().getEncoded();
-    }
-
-    @Override
-    public void generateSalt() throws RemoteException{
-        SecureRandom random = new SecureRandom();
-        salt = new byte[124];
-        random.nextBytes(salt);
+        System.out.println("Secret Key has been generated for Registrar");
     }
 
     public static String convertSecretKeyToString(SecretKey secretKey) {
@@ -82,19 +80,27 @@ public class RegistrarImpl extends UnicastRemoteObject implements Registrar{
         return encodedKey;
     }
 
-    public static SecretKey convertStringToSecretKey(String encodedKey) {
-        byte[] decodedKey = Base64.getDecoder().decode(encodedKey);
+    public static SecretKey convertStringToSecretKey(String encodedKey) throws UnsupportedEncodingException {
+        byte[] decodedKey = encodedKey.getBytes("UTF-8");
+        //byte[] decodedKey = Base64.getDecoder().decode(encodedKey);
         SecretKey originalKey = new SecretKeySpec(decodedKey, 0, decodedKey.length, "AES");
         return originalKey;
     }
 
+    public void generateSalt(){
+        SecureRandom random = new SecureRandom();
+        this.salt = new byte[16];
+        this.iv = new byte[16];
+        random.nextBytes(salt);
+        random.nextBytes(iv);
+    }
     @Override
     public LocalDate getDate() throws RemoteException {
         return this.date;
     }
 
     @Override
-    public void nextDay() throws RemoteException, NoSuchAlgorithmException, SignatureException, InvalidKeyException {
+    public void nextDay() throws IOException, NoSuchAlgorithmException, SignatureException, InvalidKeyException, NoSuchPaddingException, IllegalBlockSizeException, InvalidKeySpecException, BadPaddingException, InvalidAlgorithmParameterException {
         this.date = date.plusDays(1);
         //bij nieuwe dag moeten users nieuwe tokens krijgen
         for(User u : users) {
@@ -105,6 +111,18 @@ public class RegistrarImpl extends UnicastRemoteObject implements Registrar{
                 u.retrieveTokens(generatedTokens);
             }
         }
+
+        for (CateringFacility cf :
+                cateringFacilities) {
+            //elke dag moet de registrar een nieuwe sCF genereren voor elke catering
+            //en daaruit een pseudoniem afleiden voor elke catering
+            cf.requestDailyPseudonym();
+            //er wordt ook een nieuw random number R_i gegenereerd
+            cf.generateDailyRandomNumber();
+            //daarna moeten er nieuwe qr-codes gegenereerd worden
+            cf.generateQRcode();
+        }
+
     }
 
     @Override
@@ -123,63 +141,47 @@ public class RegistrarImpl extends UnicastRemoteObject implements Registrar{
     Catering methodes
      */
     @Override
-    public void enrollCatering(CateringFacility cf) throws RemoteException {
+    public void enrollCatering(CateringFacility cf) throws IOException, InvalidAlgorithmParameterException, NoSuchPaddingException, IllegalBlockSizeException, NoSuchAlgorithmException, InvalidKeySpecException, BadPaddingException, InvalidKeyException {
         cateringFacilities.add(cf);
         System.out.println(cf.getFacilityName()+ " has been enrolled.");
-        System.out.println(cateringFacilities);
+        cf.requestDailyPseudonym();
+        cf.generateDailyRandomNumber();
+        cf.generateQRcode();
     }
 
-    @Override
-    public byte[] deriveDailySecretKey(long CF, LocalDate date) throws RemoteException, NoSuchAlgorithmException, NoSuchPaddingException, InvalidKeySpecException {
-        //CF is het business number
+    public byte[] deriveDailySecretKey(long CF) throws RemoteException, NoSuchPaddingException, NoSuchAlgorithmException, InvalidKeyException, IllegalBlockSizeException, BadPaddingException, UnsupportedEncodingException, InvalidKeySpecException, InvalidAlgorithmParameterException {
         /*
-        Constructie van key derivation function s_(CF,day_i) = KDF(s, CF, day_i)
+        s_(CF, day_i) = KDF(s, CF, day_i)
          */
-        /*
-        Gebruikmakend van het PBKDF2WithHmacSHA256 algoritme wordt een key derivation function geconstrueerd
-        Argumenten:
-        - char [] password: concatenatie van s, CF and day_i; onderscheiden van elkaar met ","
-        - byte[] salt: wordt gegenereerd bij het opzetten van de registrar
-        - int iterationCount
-        - int keyLength
-         */
+        // 1) Constructie van een byte[] die CF en day_i bevat
+        byte[] arguments = (String.valueOf(CF) + "|" + String.valueOf(date)).getBytes();
+
+        // 2) KDF berekenen
+        IvParameterSpec ivspec = new IvParameterSpec(iv);
+
+        KeySpec spec = new PBEKeySpec("password".toCharArray(), salt, 65536, 256); // AES-256
+        SecretKeyFactory f = SecretKeyFactory.getInstance("PBKDF2WithHmacSHA256");
+        byte[] key = f.generateSecret(spec).getEncoded();
+        SecretKeySpec keySpec = new SecretKeySpec(key, "AES");
+
+        Cipher c = Cipher.getInstance("AES/CBC/PKCS5Padding");
+        c.init(Cipher.ENCRYPT_MODE, keySpec, ivspec);
+        return c.doFinal(arguments);
 
         /*
-        // 1) Argumenten omzetten naar String
-        String uniqueIdentifier = String.valueOf(CF);
-        String day = String.valueOf(date);
-        char[] arguments = (uniqueIdentifier + "," + day).toCharArray();
-
-        // aantal iteraties
-        int count = 1000;
-
-        // 2) KDF construeren met bijhorende parameters
-        PBEParameterSpec pbeParamSpec = new PBEParameterSpec(salt, count);
-        PBEKeySpec pbeKeySpec = new PBEKeySpec(arguments);
-        SecretKeyFactory keyFac = SecretKeyFactory.getInstance("PBKDF2WithHmacSHA256");
-        SecretKey pbeKey = keyFac.generateSecret(pbeKeySpec);
-
-        return pbeKey.getEncoded();
+        Cipher cipher = Cipher.getInstance("AES");
+        cipher.init(Cipher.ENCRYPT_MODE, convertStringToSecretKey(s.toString()));
+        return cipher.doFinal(arguments);
 
          */
-        return null;
     }
-
     @Override
-    public byte[] calculateDailyPseudonym(long CF, LocalDate date, String location) throws IOException, NoSuchAlgorithmException, NoSuchPaddingException, InvalidKeySpecException {
+    public byte[] calculateDailyPseudonym(long CF, String location) throws IOException, NoSuchAlgorithmException, NoSuchPaddingException, IllegalBlockSizeException, BadPaddingException, InvalidKeyException, InvalidAlgorithmParameterException, InvalidKeySpecException {
         MessageDigest sha = MessageDigest.getInstance("SHA-256");
-        byte[] sCF = deriveDailySecretKey(CF, date);
-
-        ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        DataOutputStream dos = new DataOutputStream(baos);
-
-        dos.write(location.getBytes());
-        dos.write(sCF);
-        dos.write(date.toString().getBytes());
-        dos.flush();
-        dos.close();
-        baos.close();
-
-        return sha.digest(baos.toByteArray());
+        byte[] sCF = deriveDailySecretKey(CF);
+        byte[] arguments = (location + ";" + date).getBytes();
+        sha.update(sCF);
+        System.out.println("Daily pseudonym has been calculated at registrar.");
+        return sha.digest(arguments);
     }
 }
