@@ -28,17 +28,18 @@ public class RunCateringFacility extends Application {
     /*
 
      */
+    public TextField businessNumberField;
     public TextField facilityNameField;
     public TextField locationField;
     public TextField phoneNumberField;
     public Button registerButton;
-    public TextField businessNumberField;
+    public Button stopButton;
     public Label errorLabel;
 
     /*
     Server-client communicatie componenten
      */
-
+    CateringFacilityImpl cateringFacility;
     Registry registry;
     Registrar registrar;
 
@@ -47,9 +48,10 @@ public class RunCateringFacility extends Application {
         Parent root = FXMLLoader.load(getClass().getClassLoader().getResource("CateringFacility.fxml"));
         primaryStage.setScene(new Scene(root));
         primaryStage.show();
+        primaryStage.setTitle("Catering Facility");
     }
 
-    public void pushButton(ActionEvent event) throws IOException, NotBoundException, NoSuchPaddingException, IllegalBlockSizeException, NoSuchAlgorithmException, BadPaddingException, InvalidKeyException, InvalidAlgorithmParameterException, InvalidKeySpecException {
+    public void pushRegisterButton(ActionEvent event) throws IOException, NotBoundException, NoSuchPaddingException, IllegalBlockSizeException, NoSuchAlgorithmException, BadPaddingException, InvalidKeyException, InvalidAlgorithmParameterException, InvalidKeySpecException {
         if (phoneNumberField.getText().isEmpty() || businessNumberField.getText().isEmpty()
                 || locationField.getText().isEmpty() || facilityNameField.getText().isEmpty()){
             Alert alert = new Alert(Alert.AlertType.ERROR,"Please complete all fields!");
@@ -75,22 +77,65 @@ public class RunCateringFacility extends Application {
             String location = locationField.getText();
             String facilityName = facilityNameField.getText();
 
-            CateringFacilityImpl cateringFacility = new CateringFacilityImpl(
+            cateringFacility = new CateringFacilityImpl(
                     phoneNumber, businessNumber, location, facilityName, registrar
             );
-            registrar.enrollCatering(cateringFacility);
+
+            String[] uniqueCatering = registrar.checkAuthenticityCatering(cateringFacility);
+            String alertString = "";
+
+            if(uniqueCatering[0] != null) {
+                alertString += "Business number: " + uniqueCatering[0] + "\n";
+            }
+            if(uniqueCatering[1] != null) {
+                alertString += "Facility name: " + uniqueCatering[1] + "\n";
+            }
+            if(uniqueCatering[2] != null) {
+                alertString += "Location: " + uniqueCatering[2] + "\n";
+            }
+            if(uniqueCatering[3]!= null) {
+                alertString += "Phone number: " + uniqueCatering[3] + "\n";
+            }
+            if(!alertString.isEmpty()){
+                Alert alert = new Alert(Alert.AlertType.ERROR,"There already exists a catering with the following fields: \n" + alertString);
+                alert.showAndWait();
+            } else {
+                registrar.enrollCatering(cateringFacility);
+                businessNumberField.setText(Long.toString(cateringFacility.getBusinessNumber()));
+                businessNumberField.setEditable(false);
+                facilityNameField.setText(cateringFacility.getFacilityName());
+                facilityNameField.setEditable(false);
+                locationField.setText(cateringFacility.getLocation());
+                locationField.setEditable(false);
+                phoneNumberField.setText(Long.toString(cateringFacility.getPhoneNumber()));
+                phoneNumberField.setEditable(false);
+                registerButton.setVisible(false);
+                stopButton.setVisible(true);
+            }
         }
     }
 
-    private boolean isLong(TextField f, String msg)
-    {
-        try
-        {
+    public void pushStopButton(ActionEvent event) throws IOException{
+        if(registrar != null && cateringFacility != null){
+            registrar.disconnectCatering(cateringFacility);
+        }
+        System.exit(0);
+    }
+
+    @Override
+    // Werkt niet, verwijdert CF niet
+    public void stop() throws IOException{
+        if(registrar != null && cateringFacility != null){
+            registrar.disconnectCatering(cateringFacility);
+        }
+        System.exit(0);
+    }
+
+    private boolean isLong(TextField f, String msg) {
+        try {
             Long.parseLong(f.getText());
             return true;
-        }
-        catch (NumberFormatException e)
-        {
+        } catch (NumberFormatException e) {
             return false;
         }
     }

@@ -13,6 +13,7 @@ import java.security.spec.InvalidKeySpecException;
 
 public interface CateringFacility extends Remote{
     long getBusinessNumber() throws RemoteException;
+    long getPhoneNumber() throws RemoteException;
     String getFacilityName() throws RemoteException;
     String getLocation() throws RemoteException;
     void requestDailyPseudonym() throws IOException, NoSuchPaddingException, IllegalBlockSizeException, NoSuchAlgorithmException, InvalidKeySpecException, BadPaddingException, InvalidKeyException, InvalidAlgorithmParameterException;

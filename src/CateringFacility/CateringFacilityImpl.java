@@ -74,15 +74,19 @@ public class CateringFacilityImpl extends UnicastRemoteObject implements Caterin
     public void setPhoneNumber(long phoneNumber) {
         this.phoneNumber = phoneNumber;
     }
-    public long getPhoneNumber() {
-        return phoneNumber;
-    }
+
 
     /*
     Getters
      */
+    @Override
     public long getBusinessNumber() throws RemoteException{
         return businessNumber;
+    }
+
+    @Override
+    public long getPhoneNumber() throws RemoteException{
+        return phoneNumber;
     }
 
     @Override

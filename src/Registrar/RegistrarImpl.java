@@ -7,11 +7,8 @@ import javax.crypto.*;
 import javax.crypto.spec.IvParameterSpec;
 import javax.crypto.spec.PBEKeySpec;
 import javax.crypto.spec.SecretKeySpec;
-import java.io.ByteArrayOutputStream;
-import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
-import java.nio.charset.StandardCharsets;
 import java.rmi.RemoteException;
 import java.rmi.server.UnicastRemoteObject;
 import java.security.NoSuchAlgorithmException;
@@ -141,12 +138,38 @@ public class RegistrarImpl extends UnicastRemoteObject implements Registrar{
     Catering methodes
      */
     @Override
+    public String[] checkAuthenticityCatering(CateringFacility newCatering) throws RemoteException {
+        String[] unique  = new String[4];
+        for(CateringFacility cf : cateringFacilities){
+            if(cf.getBusinessNumber() == newCatering.getBusinessNumber()){
+                unique[0] = Long.toString(newCatering.getBusinessNumber());
+            }
+            if(cf.getFacilityName().equals(newCatering.getFacilityName())){
+                unique[1] = newCatering.getFacilityName();
+            }
+            if(cf.getLocation().equals(newCatering.getLocation())){
+                unique[2] = newCatering.getLocation();
+            }
+            if(cf.getPhoneNumber() == newCatering.getPhoneNumber()){
+                unique[3] = Long.toString(newCatering.getPhoneNumber());
+            }
+        }
+        return unique;
+    }
+
+    @Override
     public void enrollCatering(CateringFacility cf) throws IOException, InvalidAlgorithmParameterException, NoSuchPaddingException, IllegalBlockSizeException, NoSuchAlgorithmException, InvalidKeySpecException, BadPaddingException, InvalidKeyException {
         cateringFacilities.add(cf);
         System.out.println(cf.getFacilityName()+ " has been enrolled.");
         cf.requestDailyPseudonym();
         cf.generateDailyRandomNumber();
         cf.generateQRcode();
+    }
+
+    @Override
+    public void disconnectCatering(CateringFacility cf) throws RemoteException {
+        cateringFacilities.remove(cf);
+        System.out.println(cf.getFacilityName()+ " has been deleted.");
     }
 
     public byte[] deriveDailySecretKey(long CF) throws RemoteException, NoSuchPaddingException, NoSuchAlgorithmException, InvalidKeyException, IllegalBlockSizeException, BadPaddingException, UnsupportedEncodingException, InvalidKeySpecException, InvalidAlgorithmParameterException {
