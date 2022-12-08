@@ -5,6 +5,9 @@ import MixingProxy.MixingProxy;
 import Registrar.Registrar;
 
 import java.rmi.RemoteException;
+import java.security.InvalidKeyException;
+import java.security.NoSuchAlgorithmException;
+import java.security.SignatureException;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -52,12 +55,12 @@ public class UserImpl extends UnicastRemoteObject implements User {
     }
 
     @Override
-    public void scanQR(UserImpl user, String qr) throws RemoteException {
+    public void scanQR(UserImpl user, String qr) throws RemoteException, NoSuchAlgorithmException, SignatureException, InvalidKeyException {
         LocalDateTime ldt = LocalDateTime.now();
         this.QRCode = qr;
         userLogs.add(ldt + " - " + qr);
         // TODO juiste versie met echte QR
-        mixingProxy.retrieveCapsule(user, ldt + "-" + user.getUserTokens().get(0) +"-"+ qr );
+        mixingProxy.retrieveCapsule(user, ldt + "|" + user.getUserTokens().get(0) +"|"+ qr );
         user.getUserTokens().remove(0);
     }
 

@@ -75,7 +75,7 @@ public class RunUser extends Application {
                 try {
                     user.scanQR(user, qr.getText());
                     tokensRemainingLabel.setText("Daily visits remaining: "+ String.valueOf(user.getUserTokens().size()));
-                } catch (RemoteException ex) {
+                } catch (RemoteException | NoSuchAlgorithmException | SignatureException | InvalidKeyException ex) {
                     ex.printStackTrace();
                 }
             }

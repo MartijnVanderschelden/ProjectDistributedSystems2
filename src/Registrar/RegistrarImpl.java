@@ -31,6 +31,8 @@ public class RegistrarImpl extends UnicastRemoteObject implements Registrar{
     private Map<String, ArrayList<byte[]>> userTokensMap;
     private Map<Long, ArrayList<byte[]>> pseudonyms;
     private Map<String, ArrayList<byte[]>> signedTokensMap;
+    private PrivateKey privateKey;
+    private PublicKey publicKey;
 
 
     public RegistrarImpl() throws RemoteException, NoSuchAlgorithmException {
@@ -41,17 +43,19 @@ public class RegistrarImpl extends UnicastRemoteObject implements Registrar{
         cateringFacilities = new ArrayList<>();
         generateSecretKey();
         generateSalt();
+        KeyPairGenerator keyPairGenerator = KeyPairGenerator.getInstance("DSA");
+        KeyPair keyPair = keyPairGenerator.generateKeyPair();
+        this.privateKey = keyPair.getPrivate();
+        this.publicKey= keyPair.getPublic();
     }
 
-    public static ArrayList<byte[]> generateUserTokens(String phone) throws NoSuchAlgorithmException, InvalidKeyException, SignatureException {
+    public ArrayList<byte[]> generateUserTokens(String phone) throws NoSuchAlgorithmException, InvalidKeyException, SignatureException {
         ArrayList<byte[]> tokens = new ArrayList<>();
         // Digitale Handtekeningen
         Signature signature = Signature.getInstance("SHA256WithDSA");
-        KeyPairGenerator keyPairGenerator = KeyPairGenerator.getInstance("DSA");
-        KeyPair keyPair = keyPairGenerator.generateKeyPair();
         for (int i = 0; i < 48; i++) {
             SecureRandom secureRandom = new SecureRandom();
-            signature.initSign(keyPair.getPrivate(), secureRandom);
+            signature.initSign(privateKey, secureRandom);
             signature.update(Byte.parseByte(phone));
             tokens.add(i, signature.sign());
         }
@@ -121,7 +125,7 @@ public class RegistrarImpl extends UnicastRemoteObject implements Registrar{
         }
 
     }
-
+    //user methodes
     @Override
     public void enrollUser(User user) throws RemoteException, NoSuchAlgorithmException, SignatureException, InvalidKeyException {
         users.add(user);
@@ -133,7 +137,26 @@ public class RegistrarImpl extends UnicastRemoteObject implements Registrar{
         }
         user.retrieveTokens(generatedTokens);
     }
+    @Override
+    public PublicKey getPublicKey() throws RemoteException {
+        return publicKey;
+    }
 
+    @Override
+    public boolean checkToken(PublicKey publicKey, User user, byte[] signedToken) throws RemoteException, NoSuchAlgorithmException, InvalidKeyException, SignatureException {
+        //1. kijken of token bestaat in de usertokensmap
+        //System.out.println("size" + userTokensMap.get(user.getPhone()).size() + "tokens: " + userTokensMap.get(user.getPhone()));
+        boolean tokenExists = userTokensMap.get(user.getPhone()).contains(signedToken);
+        //System.out.println("token exists: " + tokenExists);
+        if (tokenExists){
+            Signature signature = Signature.getInstance("SHA256withRSA");
+            signature.initVerify(publicKey);
+            signature.update(Byte.parseByte(user.getPhone()));
+            System.out.println("token is autentiek" + signature.verify(signedToken));
+            return signature.verify(signedToken);
+
+        } else return false;
+    }
     /*
     Catering methodes
      */

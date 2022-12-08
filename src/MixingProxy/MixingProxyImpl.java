@@ -5,20 +5,19 @@ import User.User;
 
 import java.rmi.RemoteException;
 import java.rmi.server.UnicastRemoteObject;
-import java.security.PrivateKey;
-import java.security.PublicKey;
+import java.security.*;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
 public class MixingProxyImpl extends UnicastRemoteObject implements MixingProxy{
-    private static PrivateKey sk; //used to sign capsules
-    private static PublicKey pk; //used by visitor to verify signing
+    private PublicKey publicKey;
     private Registrar registrar;
     private Map<User, ArrayList<String>> userCapsules;
     public MixingProxyImpl(Registrar r) throws RemoteException{
         this.registrar=r;
         userCapsules = new HashMap<>();
+        this.publicKey = r.getPublicKey();
     }
     @Override
     public void connectToServer() throws RemoteException {
@@ -26,11 +25,26 @@ public class MixingProxyImpl extends UnicastRemoteObject implements MixingProxy{
     }
 
     @Override
-    public void retrieveCapsule(User user, String string) throws RemoteException {
+    public String retrieveCapsule(User user, String capsule) throws RemoteException, NoSuchAlgorithmException, SignatureException, InvalidKeyException {
         ArrayList<String> capsules = new ArrayList<>();
-        capsules.add(string);
+        capsules.add(capsule);
         userCapsules.put(user, capsules);
-        System.out.println("Received a capsule: " + string);
+        System.out.println("Received a capsule: " + capsule);
+        //2. Capsule controleren
+        //2.1 Usertoken controleren
 
+
+        String stringtoken = capsule.substring(capsule.indexOf('|'),capsule.lastIndexOf('|'));
+        byte[] bytetoken= stringtoken.getBytes();
+        //
+        if (registrar.checkToken(publicKey, user, bytetoken)){
+            System.out.println("token verified");
+            return "ok";
+
+        }
+        else {
+            System.out.println("token not verified");
+            return "not ok";
+        }
     }
 }
