@@ -197,10 +197,13 @@ public class RegistrarImpl extends UnicastRemoteObject implements Registrar{
 
     public byte[] deriveDailySecretKey(long CF) throws RemoteException, NoSuchPaddingException, NoSuchAlgorithmException, InvalidKeyException, IllegalBlockSizeException, BadPaddingException, UnsupportedEncodingException, InvalidKeySpecException, InvalidAlgorithmParameterException {
         /*
+        Gebaseerd op: https://stackoverflow.com/questions/29354133/how-to-fix-invalid-aes-key-length
+         */
+        /*
         s_(CF, day_i) = KDF(s, CF, day_i)
          */
         // 1) Constructie van een byte[] die CF en day_i bevat
-        byte[] arguments = (String.valueOf(CF) + "|" + String.valueOf(date)).getBytes();
+        byte[] arguments = (String.valueOf(s) + "|" + String.valueOf(CF) + "|" + String.valueOf(date)).getBytes();
 
         // 2) KDF berekenen
         IvParameterSpec ivspec = new IvParameterSpec(iv);

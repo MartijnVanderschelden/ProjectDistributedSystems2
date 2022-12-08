@@ -59,15 +59,6 @@ public class CateringFacilityImpl extends UnicastRemoteObject implements Caterin
     }
     //Methode om dagelijke pseudonym te krijgen
 
-    /*
-    public void getDailyPseudonym() throws NoSuchAlgorithmException, InvalidKeySpecException, BadPaddingException, InvalidKeyException, NoSuchPaddingException, IllegalBlockSizeException {
-        this.date = registrar.getDate();
-        dailyPseudonym = registrar.calculateDailyPseudonym(this.businessNumber, this.location);
-        System.out.println("New salt received at facility: " + this.facilityName + " on:" + this.date);
-    }
-
-     */
-
     //Methode om gebruiker, die deze QR code scant, te registreren
     public void registerUser(){
 
