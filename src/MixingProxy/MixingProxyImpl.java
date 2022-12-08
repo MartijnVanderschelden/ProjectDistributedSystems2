@@ -29,7 +29,7 @@ public class MixingProxyImpl extends UnicastRemoteObject implements MixingProxy 
     }
 
     @Override
-    public String retrieveCapsule(User user, LocalDate ldt, String qr, byte[] userToken) throws RemoteException, NoSuchAlgorithmException, SignatureException, InvalidKeyException {
+    public boolean retrieveCapsule(User user, LocalDate ldt, String qr, byte[] userToken) throws RemoteException, NoSuchAlgorithmException, SignatureException, InvalidKeyException {
         LocalDate ldtTest = registrar.getDate();
         String userTokenString = new String(userToken, StandardCharsets.UTF_8);
         System.out.println("Received a capsule: " + ldt + "|" + "|" + qr + "|" + userTokenString);
@@ -64,10 +64,10 @@ public class MixingProxyImpl extends UnicastRemoteObject implements MixingProxy 
         //3. Controleren of het niet nog eens gebruikt is
         if (validCount==3) {
             System.out.println("Capsule is valid!");
-            return "ok";
+            return true;
         }
         else{
-            return "not ok";
+            return false;
         }
     }
 }

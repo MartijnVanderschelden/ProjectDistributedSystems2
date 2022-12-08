@@ -11,5 +11,5 @@ import java.time.LocalDate;
 
 public interface MixingProxy extends Remote {
     void connectToServer() throws RemoteException;
-    String retrieveCapsule(User user, LocalDate ldt, String capsule, byte[] userToken) throws RemoteException, NoSuchAlgorithmException, SignatureException, InvalidKeyException;
+    boolean retrieveCapsule(User user, LocalDate ldt, String capsule, byte[] userToken) throws RemoteException, NoSuchAlgorithmException, SignatureException, InvalidKeyException;
 }

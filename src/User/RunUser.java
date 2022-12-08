@@ -30,7 +30,7 @@ public class RunUser extends Application {
     private Registrar registrar;
     private MixingProxy mixingProxy;
     private MatchingService matchingService;
-    public Label tokensRemainingLabel;
+    public Label tokensRemainingLabel, scanResponseLabel;
     public UserImpl user;
     public Button enrollButton;
     public Button scanQrButton = new Button("Scan QR Code");
@@ -73,7 +73,8 @@ public class RunUser extends Application {
             public void handle(ActionEvent e)
             {
                 try {
-                    user.scanQR(user, qr.getText());
+                    String scanResponse = user.scanQR(user, qr.getText());
+                    scanResponseLabel.setText(scanResponse);
                     tokensRemainingLabel.setText("Daily visits remaining: "+ String.valueOf(user.getUserTokens().size()));
                 } catch (RemoteException | NoSuchAlgorithmException | SignatureException | InvalidKeyException ex) {
                     ex.printStackTrace();

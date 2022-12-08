@@ -9,6 +9,7 @@
         <Label fx:id="tokensRemainingLabel" />
         <Button fx:id="scanQrButton" layoutX="254.0" layoutY="300.0" text="Scan QR" AnchorPane.leftAnchor="254.0" AnchorPane.rightAnchor="254.66000000000008"> </Button>
         <TextField fx:id="qr" layoutX="220.0" layoutY="268.0" />
+        <Label fx:id="scanResponseLabel" prefHeight="17.0" layoutX="187.0" layoutY="187.0" />
 
     </children>
 </AnchorPane>
