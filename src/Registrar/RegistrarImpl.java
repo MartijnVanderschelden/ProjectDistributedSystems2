@@ -9,6 +9,7 @@ import javax.crypto.spec.PBEKeySpec;
 import javax.crypto.spec.SecretKeySpec;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
+import java.nio.charset.StandardCharsets;
 import java.rmi.RemoteException;
 import java.rmi.server.UnicastRemoteObject;
 import java.security.NoSuchAlgorithmException;
@@ -28,9 +29,9 @@ public class RegistrarImpl extends UnicastRemoteObject implements Registrar{
     private List<CateringFacility> cateringFacilities;
     private ArrayList<User> users;
     //Key=phone
-    private Map<String, ArrayList<byte[]>> userTokensMap;
+    private Map<String, List<byte[]>> userTokensMap;
     private Map<Long, ArrayList<byte[]>> pseudonyms;
-    private Map<String, ArrayList<byte[]>> signedTokensMap;
+    private Map<String, List<byte[]>> signedTokensMap;
     private PrivateKey privateKey;
     private PublicKey publicKey;
 
@@ -52,20 +53,18 @@ public class RegistrarImpl extends UnicastRemoteObject implements Registrar{
     public ArrayList<byte[]> generateUserTokens(String phone) throws NoSuchAlgorithmException, InvalidKeyException, SignatureException {
         ArrayList<byte[]> tokens = new ArrayList<>();
         // Digitale Handtekeningen
-        Signature signature = Signature.getInstance("SHA256WithDSA");
+
         for (int i = 0; i < 48; i++) {
+            Signature signature = Signature.getInstance("SHA256WithDSA");
             SecureRandom secureRandom = new SecureRandom();
             signature.initSign(privateKey, secureRandom);
-            signature.update(Byte.parseByte(phone));
-            tokens.add(i, signature.sign());
+            signature.update(phone.getBytes(StandardCharsets.UTF_8));
+            byte[] digitalSignature = signature.sign();
+            tokens.add(i, digitalSignature);
         }
 
-        //Handtekening
-
-        return tokens;
-        //Handtekening controleren
-        //signatureVerify.initVerify(keyPair.getPublic());
         //signatureVerify.update(Byte.parseByte(phone));
+        return tokens;
     }
     public void generateSecretKey() throws RemoteException, NoSuchAlgorithmException {
         //https://www.baeldung.com/java-secret-key-to-string#:~:text=There%20are%20two%20ways%20for,Generator%20like%20the%20SecureRandom%20class.
