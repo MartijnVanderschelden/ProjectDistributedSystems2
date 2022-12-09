@@ -56,14 +56,17 @@ public class UserImpl extends UnicastRemoteObject implements User {
 
     @Override
     public String scanQR(UserImpl user, String qr) throws RemoteException, NoSuchAlgorithmException, SignatureException, InvalidKeyException {
+        //tijd
         LocalDate ld = LocalDate.now();
         LocalDateTime ldt = LocalDateTime.now();
+        //qr code loggen
         this.QRCode = qr;
-        userLogs.add(ldt + " - " + qr);
-        // TODO juiste versie met echte QR
+        userLogs.add(ldt + "^" + qr);
+        System.out.println("Following log is added to user logs: " + ldt + "|" + qr);
+        //h value van qr code splitten om door te sturen in capsule
+        String h = qr.substring(qr.lastIndexOf("|") + 1);
+        boolean validityToken = mixingProxy.retrieveCapsule(user, ld, h, user.userTokens.get(0));
         user.userTokens.remove(0);
-        boolean validityToken = mixingProxy.retrieveCapsule(user, ld, qr, user.userTokens.get(0));
-
         if(validityToken){
             return "ok " + ldt;
         }
