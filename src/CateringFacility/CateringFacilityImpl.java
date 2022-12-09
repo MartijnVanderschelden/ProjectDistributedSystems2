@@ -127,4 +127,8 @@ public class CateringFacilityImpl extends UnicastRemoteObject implements Caterin
                 ", facilityName='" + facilityName + '\'' +
                 '}';
     }
+
+    public String getQRcode() {
+        return QRcode;
+    }
 }
