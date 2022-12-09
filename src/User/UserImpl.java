@@ -73,7 +73,6 @@ public class UserImpl extends UnicastRemoteObject implements User {
         //op basis van business nummer een kleur toekennen
         String businessNumber = qr.substring(qr.indexOf('|') + 1, qr.lastIndexOf('|'));
         generateColor(businessNumber);
-        System.out.println("Business nummer:" + businessNumber);
         if(validityToken){
             return "ok | " + ldt;
         }

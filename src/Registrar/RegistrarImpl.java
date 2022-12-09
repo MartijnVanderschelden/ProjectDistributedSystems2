@@ -122,6 +122,8 @@ public class RegistrarImpl extends UnicastRemoteObject implements Registrar{
             //daarna moeten er nieuwe qr-codes gegenereerd worden
             cf.generateQRcode();
         }
+        // Bij nieuwe dag moeten de capsules van mixing naar matching verstuurd worden
+
 
     }
     //user methodes

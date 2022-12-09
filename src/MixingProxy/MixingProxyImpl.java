@@ -2,7 +2,7 @@ package MixingProxy;
 
 import Registrar.Registrar;
 import User.User;
-
+import MatchingService.MatchingService;
 import java.nio.charset.StandardCharsets;
 import java.rmi.RemoteException;
 import java.rmi.server.UnicastRemoteObject;
@@ -14,12 +14,13 @@ import java.util.*;
 public class MixingProxyImpl extends UnicastRemoteObject implements MixingProxy {
     private PublicKey publicKey;
     private Registrar registrar;
+    private MatchingService matchingService;
     List<byte[]> spentTokens = new ArrayList<>();
-    private Map<User, List<byte[]>> userCapsules;
+    private ArrayList<String> capsules;
 
     public MixingProxyImpl(Registrar r) throws RemoteException {
         this.registrar = r;
-        userCapsules = new HashMap<>();
+        capsules = new ArrayList<>();
         this.publicKey = r.getPublicKey();
     }
 
@@ -31,10 +32,14 @@ public class MixingProxyImpl extends UnicastRemoteObject implements MixingProxy 
     @Override
     public boolean retrieveCapsule(User user, LocalDate ldt, String qr, byte[] userToken) throws RemoteException, NoSuchAlgorithmException, SignatureException, InvalidKeyException {
         LocalDate ldtTest = registrar.getDate();
+
         String userTokenString = new String(userToken, StandardCharsets.UTF_8);
         System.out.println("Received a capsule: " + ldt + "|" + "|" + qr + "|" + userTokenString);
         spentTokens.add(userToken);
-
+        ////// Toevoegen aan capsules
+        LocalDateTime localdatetime = LocalDateTime.now();
+        capsules.add(localdatetime + "|" + qr + "|" + userTokenString);
+                /////
         int validCount = 0;
         Signature signatureVerify = Signature.getInstance("SHA256WithDSA");
         signatureVerify.initVerify(publicKey);
@@ -63,11 +68,18 @@ public class MixingProxyImpl extends UnicastRemoteObject implements MixingProxy 
         }
         //3. Controleren of het niet nog eens gebruikt is
         if (validCount==3) {
-            System.out.println("Capsule is valid!");
+            System.out.println("Capsule is valid and got added to capsules");
             return true;
         }
         else{
             return false;
         }
+    }
+
+    @Override
+    public void flush() throws RemoteException {
+        matchingService.retrieveCapsules(capsules);
+        capsules.clear();
+        System.out.println("Capsules got flushed and sent to Matching Service");
     }
 }

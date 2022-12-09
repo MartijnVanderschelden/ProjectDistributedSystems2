@@ -36,7 +36,7 @@ public class RunUser extends Application {
     public Button enrollButton;
     public Button scanQrButton = new Button("Scan QR Code");
     public TextField qr = new TextField();
-
+    public Button leaveCatheringButton;
     int count;
 
     @Override
