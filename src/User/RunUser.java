@@ -23,6 +23,7 @@ import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
+import javafx.scene.paint.Color;
 import javafx.stage.Stage;
 
 public class RunUser extends Application {
@@ -75,6 +76,7 @@ public class RunUser extends Application {
                 try {
                     String scanResponse = user.scanQR(user, qr.getText());
                     scanResponseLabel.setText(scanResponse);
+                    scanResponseLabel.setTextFill(user.getColorAfterQrScan());
                     tokensRemainingLabel.setText("Daily visits remaining: "+ String.valueOf(user.getUserTokens().size()));
                 } catch (RemoteException | NoSuchAlgorithmException | SignatureException | InvalidKeyException ex) {
                     ex.printStackTrace();

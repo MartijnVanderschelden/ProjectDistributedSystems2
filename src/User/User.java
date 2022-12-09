@@ -1,11 +1,13 @@
 package User;
 
+import java.awt.*;
 import java.rmi.Remote;
 import java.rmi.RemoteException;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.security.SignatureException;
 import java.util.*;
+import java.util.List;
 
 public interface User extends Remote{
     String getPhone() throws RemoteException;
