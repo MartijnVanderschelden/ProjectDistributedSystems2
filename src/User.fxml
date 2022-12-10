@@ -1,15 +1,19 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<?import javafx.scene.control.*?>
-<?import javafx.scene.layout.*?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.layout.AnchorPane?>
 
-<AnchorPane prefHeight="400.0" prefWidth="600.0" xmlns="http://javafx.com/javafx/11.0.14-internal" xmlns:fx="http://javafx.com/fxml/1" fx:controller="User.RunUser">
+<AnchorPane prefHeight="400.0" prefWidth="600.0" xmlns="http://javafx.com/javafx/18" xmlns:fx="http://javafx.com/fxml/1" fx:controller="User.RunUser">
     <children>
-        <Button fx:id="enrollButton" layoutX="254.0" layoutY="187.0" mnemonicParsing="false" onAction="#pushEnrollButton" text="Enroll user" AnchorPane.leftAnchor="254.33" AnchorPane.rightAnchor="254.33" />
+        <Button fx:id="enrollButton" layoutX="254.0" layoutY="161.0" mnemonicParsing="false" onAction="#pushEnrollButton" text="Enroll user" AnchorPane.leftAnchor="254.0" AnchorPane.rightAnchor="254.66000000000008" />
         <Label fx:id="tokensRemainingLabel" />
-        <Button fx:id="scanQrButton" layoutX="254.0" layoutY="300.0" text="Scan QR" AnchorPane.leftAnchor="254.0" AnchorPane.rightAnchor="254.66000000000008"> </Button>
-        <TextField fx:id="qr" layoutX="220.0" layoutY="268.0" />
-        <Label fx:id="scanResponseLabel" prefHeight="17.0" layoutX="187.0" layoutY="187.0" />
+        <Button fx:id="scanQrButton" layoutX="254.0" layoutY="281.0" text="Scan " AnchorPane.leftAnchor="254.0" AnchorPane.rightAnchor="254.66000000000008"> </Button>
+        <TextField fx:id="qr" layoutX="226.0" layoutY="246.0" promptText="QR code" />
+        <Label fx:id="scanResponseLabel" layoutX="187.0" layoutY="187.0" prefHeight="17.0" />
+      <TextField fx:id="nameTextField" layoutX="226.0" layoutY="67.0" promptText="Name" />
+      <TextField fx:id="phoneNumberTextfield" layoutX="226.0" layoutY="110.0" promptText="Phone number" />
 
     </children>
 </AnchorPane>

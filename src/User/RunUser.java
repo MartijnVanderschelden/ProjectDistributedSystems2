@@ -9,7 +9,6 @@ import java.rmi.registry.Registry;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.security.SignatureException;
-import java.time.LocalDateTime;
 
 import MatchingService.MatchingService;
 import MixingProxy.MixingProxy;
@@ -20,13 +19,15 @@ import javafx.event.EventHandler;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
+import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
-import javafx.scene.paint.Color;
 import javafx.stage.Stage;
 
 public class RunUser extends Application {
+    public TextField nameTextField;
+    public TextField phoneNumberTextfield;
     private Registry registry;
     private Registrar registrar;
     private MixingProxy mixingProxy;
@@ -36,7 +37,7 @@ public class RunUser extends Application {
     public Button enrollButton;
     public Button scanQrButton = new Button("Scan QR Code");
     public TextField qr = new TextField();
-    public Button leaveCatheringButton;
+    public Button leaveCateringButton;
     int count;
 
     @Override
@@ -64,25 +65,37 @@ public class RunUser extends Application {
         mixingProxy = (MixingProxy) registryMixingProxy.lookup("MixingProxy");
 
         System.out.println("User started");
-        UserImpl user = new UserImpl("Amin", "44", registrar, mixingProxy);
-        registrar.enrollUser(user);
-        System.out.println("Daily visits remaining: "+ user.getUserTokens().size());
-        enrollButton.setVisible(false);
-        tokensRemainingLabel.setText("Daily visits remaining: "+ String.valueOf(user.getUserTokens().size()));
-        //QR Code scannen en sturen naar Mixing proxy
-        EventHandler<ActionEvent> event = new EventHandler<ActionEvent>() {
-            public void handle(ActionEvent e)
-            {
-                try {
-                    String scanResponse = user.scanQR(user, qr.getText());
-                    scanResponseLabel.setText(scanResponse);
-                    scanResponseLabel.setTextFill(user.getColorAfterQrScan());
-                    tokensRemainingLabel.setText("Daily visits remaining: "+ String.valueOf(user.getUserTokens().size()));
-                } catch (RemoteException | NoSuchAlgorithmException | SignatureException | InvalidKeyException ex) {
-                    ex.printStackTrace();
+
+        /*
+        Gegevens user ingeven
+         */
+        String name = nameTextField.getText();
+        long phoneNumber = Long.parseLong(phoneNumberTextfield.getText());
+
+        UserImpl user = new UserImpl(name, String.valueOf(phoneNumber), registrar, mixingProxy);
+        if (nameTextField.getText().isEmpty() || phoneNumberTextfield.getText().isEmpty()){
+            Alert alert = new Alert(Alert.AlertType.ERROR, "Please complete all fields!");
+            alert.showAndWait();
+        } else {
+            registrar.enrollUser(user);
+            System.out.println("Daily visits remaining: "+ user.getUserTokens().size());
+            enrollButton.setVisible(false);
+            tokensRemainingLabel.setText("Daily visits remaining: "+ String.valueOf(user.getUserTokens().size()));
+            //QR Code scannen en sturen naar Mixing proxy
+            EventHandler<ActionEvent> event = new EventHandler<ActionEvent>() {
+                public void handle(ActionEvent e)
+                {
+                    try {
+                        String scanResponse = user.scanQR(user, qr.getText());
+                        scanResponseLabel.setText(scanResponse);
+                        scanResponseLabel.setTextFill(user.getColorAfterQrScan());
+                        tokensRemainingLabel.setText("Daily visits remaining: "+ String.valueOf(user.getUserTokens().size()));
+                    } catch (RemoteException | NoSuchAlgorithmException | SignatureException | InvalidKeyException ex) {
+                        ex.printStackTrace();
+                    }
                 }
-            }
-        };
-        scanQrButton.setOnAction(event);
+            };
+            scanQrButton.setOnAction(event);
+        }
     }
 }

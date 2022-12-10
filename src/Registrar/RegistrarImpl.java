@@ -71,7 +71,7 @@ public class RegistrarImpl extends UnicastRemoteObject implements Registrar{
         KeyGenerator keyGenerator = KeyGenerator.getInstance("AES");
         keyGenerator.init(192);
         this.s = keyGenerator.generateKey().getEncoded();
-        System.out.println("Secret Key has been generated for Registrar");
+        System.out.println("Secret Key s has been generated for Registrar");
     }
 
     public static String convertSecretKeyToString(SecretKey secretKey) {
@@ -231,7 +231,14 @@ public class RegistrarImpl extends UnicastRemoteObject implements Registrar{
         byte[] sCF = deriveDailySecretKey(CF);
         byte[] arguments = (location + ";" + date).getBytes();
         sha.update(sCF);
-        System.out.println("Daily pseudonym has been calculated at registrar.");
+
+        CateringFacility catering = null;
+        for (CateringFacility cf :
+                cateringFacilities) {
+            if (cf.getBusinessNumber() == CF) catering = cf;
+        }
+        System.out.println("Daily pseudonym has been calculated at registrar for " + catering.getFacilityName() + ".");
+
         return sha.digest(arguments);
     }
 }

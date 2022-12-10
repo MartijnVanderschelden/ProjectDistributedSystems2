@@ -93,9 +93,12 @@ public class RunCateringFacility extends Application {
                 if (uniqueCatering[1] != null) {
                     alertString += "Facility name: " + uniqueCatering[1] + "\n";
                 }
+                /*
                 if (uniqueCatering[2] != null) {
                     alertString += "Location: " + uniqueCatering[2] + "\n";
                 }
+
+                 */
                 if (uniqueCatering[3] != null) {
                     alertString += "Phone number: " + uniqueCatering[3] + "\n";
                 }
@@ -119,7 +122,7 @@ public class RunCateringFacility extends Application {
                     registerButton.setVisible(false);
                     stopButton.setVisible(true);
                     businessNameLabel.setText("Catering Facility: "+ cateringFacility.getFacilityName());
-                    qrCodeLabel.setText("QR Code: " +cateringFacility.getQRcode());
+                    qrCodeLabel.setText("QR Code: " + cateringFacility.getQRcode());
                 }
             }
         }
