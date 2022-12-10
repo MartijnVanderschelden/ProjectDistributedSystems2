@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<AnchorPane prefHeight="400.0" prefWidth="600.0" xmlns="http://javafx.com/javafx/11.0.14-internal" xmlns:fx="http://javafx.com/fxml/1" fx:controller="MatchingService.RunMatchingService">
+    <children>
+        <Label fx:id="label" />
+        <Button fx:id="button" layoutX="254.0" layoutY="55.0" mnemonicParsing="false" onAction="#pushButton" text="Start Matching Service" AnchorPane.leftAnchor="254.0" AnchorPane.rightAnchor="254.66000000000008" />
+        <ListView fx:id="capsulesList" layoutX="50.0" layoutY="100.0" prefHeight="252.0" prefWidth="520.0" />
+
+    </children>
+</AnchorPane>
