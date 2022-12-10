@@ -1,6 +1,7 @@
 package Registrar;
 
 import CateringFacility.CateringFacility;
+import MatchingService.MatchingService;
 import User.User;
 
 import javax.crypto.BadPaddingException;
@@ -20,6 +21,11 @@ public interface Registrar extends Remote {
     //methodes voor user
     void enrollUser(User user) throws RemoteException, NoSuchAlgorithmException, SignatureException, InvalidKeyException;
     PublicKey getPublicKey() throws RemoteException;
+
+    void setMatchingService(MatchingService ms) throws RemoteException;
+
+
+
     boolean checkToken(PublicKey publicKey, User user, byte[] signedToken) throws RemoteException, NoSuchAlgorithmException, InvalidKeyException, SignatureException;
     /*
     Catering methodes

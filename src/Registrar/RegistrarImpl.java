@@ -1,6 +1,7 @@
 package Registrar;
 
 import CateringFacility.CateringFacility;
+import MatchingService.MatchingService;
 import User.User;
 
 import javax.crypto.*;
@@ -20,17 +21,19 @@ import java.util.*;
 import java.security.*;
 
 public class RegistrarImpl extends UnicastRemoteObject implements Registrar{
+    MatchingService matchingService;
     private byte[] s;
     //2 salt waarden
     private byte[] salt;
     private byte[] iv;
     private LocalDate date;
+    private int count;
 
     private List<CateringFacility> cateringFacilities;
     private ArrayList<User> users;
     //Key=phone
     private Map<String, List<byte[]>> userTokensMap;
-    private Map<Long, ArrayList<byte[]>> pseudonyms;
+    private Map<LocalDate, ArrayList<byte[]>> pseudonymsPerDay;
     private Map<String, List<byte[]>> signedTokensMap;
     private PrivateKey privateKey;
     private PublicKey publicKey;
@@ -38,6 +41,7 @@ public class RegistrarImpl extends UnicastRemoteObject implements Registrar{
 
     public RegistrarImpl() throws RemoteException, NoSuchAlgorithmException {
         this.date = LocalDate.now();
+        this.count = 0;
         users = new ArrayList<>();
         userTokensMap = new HashMap<>();
         signedTokensMap = new HashMap<>();
@@ -48,6 +52,8 @@ public class RegistrarImpl extends UnicastRemoteObject implements Registrar{
         KeyPair keyPair = keyPairGenerator.generateKeyPair();
         this.privateKey = keyPair.getPrivate();
         this.publicKey= keyPair.getPublic();
+        this.pseudonymsPerDay = new HashMap<>();
+        pseudonymsPerDay.put(this.date, new ArrayList<>());
     }
 
     public ArrayList<byte[]> generateUserTokens(String phone) throws NoSuchAlgorithmException, InvalidKeyException, SignatureException {
@@ -74,19 +80,6 @@ public class RegistrarImpl extends UnicastRemoteObject implements Registrar{
         System.out.println("Secret Key s has been generated for Registrar");
     }
 
-    public static String convertSecretKeyToString(SecretKey secretKey) {
-        byte[] rawData = secretKey.getEncoded();
-        String encodedKey = Base64.getEncoder().encodeToString(rawData);
-        return encodedKey;
-    }
-
-    public static SecretKey convertStringToSecretKey(String encodedKey) throws UnsupportedEncodingException {
-        byte[] decodedKey = encodedKey.getBytes("UTF-8");
-        //byte[] decodedKey = Base64.getDecoder().decode(encodedKey);
-        SecretKey originalKey = new SecretKeySpec(decodedKey, 0, decodedKey.length, "AES");
-        return originalKey;
-    }
-
     public void generateSalt(){
         SecureRandom random = new SecureRandom();
         this.salt = new byte[16];
@@ -102,6 +95,8 @@ public class RegistrarImpl extends UnicastRemoteObject implements Registrar{
     @Override
     public void nextDay() throws IOException, NoSuchAlgorithmException, SignatureException, InvalidKeyException, NoSuchPaddingException, IllegalBlockSizeException, InvalidKeySpecException, BadPaddingException, InvalidAlgorithmParameterException {
         this.date = date.plusDays(1);
+        //dag verder -> nieuwe arraylist toevoegen aan pseudonyms per day
+        pseudonymsPerDay.put(this.date, new ArrayList<>());
         //bij nieuwe dag moeten users nieuwe tokens krijgen
         for(User u : users) {
             userTokensMap.get(u.getPhone()).clear();
@@ -124,7 +119,9 @@ public class RegistrarImpl extends UnicastRemoteObject implements Registrar{
         }
         // Bij nieuwe dag moeten de capsules van mixing naar matching verstuurd worden
 
-
+        // Elke worden de pseudonyms van de dag voordien door matching service gedownload
+        ArrayList<byte[]> pseudonyms = pseudonymsPerDay.get(date.minusDays(1));
+        matchingService.downloadPseudonymsOfYesterday(pseudonyms);
     }
     //user methodes
     @Override
@@ -142,6 +139,12 @@ public class RegistrarImpl extends UnicastRemoteObject implements Registrar{
     public PublicKey getPublicKey() throws RemoteException {
         return publicKey;
     }
+
+    @Override
+    public void setMatchingService(MatchingService ms) throws RemoteException {
+        this.matchingService = ms;
+    }
+
 
     @Override
     public boolean checkToken(PublicKey publicKey, User user, byte[] signedToken) throws RemoteException, NoSuchAlgorithmException, InvalidKeyException, SignatureException {
@@ -217,13 +220,6 @@ public class RegistrarImpl extends UnicastRemoteObject implements Registrar{
         Cipher c = Cipher.getInstance("AES/CBC/PKCS5Padding");
         c.init(Cipher.ENCRYPT_MODE, keySpec, ivspec);
         return c.doFinal(arguments);
-
-        /*
-        Cipher cipher = Cipher.getInstance("AES");
-        cipher.init(Cipher.ENCRYPT_MODE, convertStringToSecretKey(s.toString()));
-        return cipher.doFinal(arguments);
-
-         */
     }
     @Override
     public byte[] calculateDailyPseudonym(long CF, String location) throws IOException, NoSuchAlgorithmException, NoSuchPaddingException, IllegalBlockSizeException, BadPaddingException, InvalidKeyException, InvalidAlgorithmParameterException, InvalidKeySpecException {
@@ -238,7 +234,8 @@ public class RegistrarImpl extends UnicastRemoteObject implements Registrar{
             if (cf.getBusinessNumber() == CF) catering = cf;
         }
         System.out.println("Daily pseudonym has been calculated at registrar for " + catering.getFacilityName() + ".");
-
-        return sha.digest(arguments);
+        byte[] pseudonym = sha.digest(arguments);
+        pseudonymsPerDay.get(this.date).add(pseudonym);
+        return pseudonym;
     }
 }

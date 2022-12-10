@@ -62,6 +62,5 @@ public class RunMatchingService extends Application {
             e.printStackTrace();
         }
         capsulesList.setItems(matchingService.capsulesList);
-
     }
 }
