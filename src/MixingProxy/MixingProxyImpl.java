@@ -3,6 +3,9 @@ package MixingProxy;
 import Registrar.Registrar;
 import User.User;
 import MatchingService.MatchingService;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
+
 import java.nio.charset.StandardCharsets;
 import java.rmi.RemoteException;
 import java.rmi.server.UnicastRemoteObject;
@@ -16,12 +19,13 @@ public class MixingProxyImpl extends UnicastRemoteObject implements MixingProxy 
     private Registrar registrar;
     private MatchingService matchingService;
     List<byte[]> spentTokens = new ArrayList<>();
-    private ArrayList<String> capsules;
+    public ObservableList<String> capsulesList;
 
-    public MixingProxyImpl(Registrar r) throws RemoteException {
+    public MixingProxyImpl(Registrar r, MatchingService m) throws RemoteException {
         this.registrar = r;
-        capsules = new ArrayList<>();
+        this.capsulesList = FXCollections.observableArrayList();
         this.publicKey = r.getPublicKey();
+        this.matchingService= m;
     }
 
     @Override
@@ -38,8 +42,8 @@ public class MixingProxyImpl extends UnicastRemoteObject implements MixingProxy 
         spentTokens.add(userToken);
         ////// Toevoegen aan capsules
         LocalDateTime localdatetime = LocalDateTime.now();
-        capsules.add(localdatetime + "|" + qr + "|" + userTokenString);
-                /////
+        capsulesList.add(localdatetime + "|" + qr + "|" + userTokenString);
+        /////
         int validCount = 0;
         Signature signatureVerify = Signature.getInstance("SHA256WithDSA");
         signatureVerify.initVerify(publicKey);
@@ -78,8 +82,11 @@ public class MixingProxyImpl extends UnicastRemoteObject implements MixingProxy 
 
     @Override
     public void flush() throws RemoteException {
-        matchingService.retrieveCapsules(capsules);
-        capsules.clear();
+        for (int i = 0; i < capsulesList.size(); i++) {
+            matchingService.retrieveCapsules(capsulesList.get(i));
+        }
+        capsulesList.clear();
         System.out.println("Capsules got flushed and sent to Matching Service");
     }
+
 }

@@ -90,12 +90,12 @@ public class UserImpl extends UnicastRemoteObject implements User {
                 this.colorAfterQrScan = Color.GREEN;
                 break;
             case "3":
-                this.colorAfterQrScan = Color.YELLOW;
+                this.colorAfterQrScan = Color.RED;
                 break;
             case "4":
                 this.colorAfterQrScan = Color.ORANGE;
                 break;
-            default: this.colorAfterQrScan = Color.RED;
+            default: this.colorAfterQrScan = Color.BLACK;
         }
     }
 

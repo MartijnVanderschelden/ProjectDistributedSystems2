@@ -1,21 +1,22 @@
 package MatchingService;
 
 import Registrar.Registrar;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
 
 import java.rmi.RemoteException;
+import java.rmi.server.UnicastRemoteObject;
 import java.util.ArrayList;
 
-public class MatchingServiceImpl implements MatchingService {
-    Registrar registrar;
-    private ArrayList<String> capsulesList;
+public class MatchingServiceImpl extends UnicastRemoteObject implements MatchingService {
+    private Registrar registrar;
+    public ObservableList<String> capsulesList;
     public MatchingServiceImpl(Registrar r) throws RemoteException {
-        capsulesList = new ArrayList<>();
+        capsulesList = FXCollections.observableArrayList();
         registrar = r;
     }
     @Override
-    public void retrieveCapsules(ArrayList<String> capsules) throws RemoteException {
-        for (int i = 0; i < capsules.size(); i++) {
-            capsulesList.add(capsules.get(i));
-        }
+    public void retrieveCapsules(String capsule) throws RemoteException {
+        capsulesList.add(capsule);
     }
 }

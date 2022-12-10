@@ -18,16 +18,18 @@ import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
+import javafx.scene.control.ListView;
 import javafx.stage.Stage;
 
 public class RunMatchingService extends Application {
     private Registry registry;
     private Registrar registrar;
-    private MixingProxy mixingProxy;
-    private MatchingService matchingService;
+    MatchingServiceImpl matchingService;
+
     public Label label;
     public Button button;
     int count;
+    public ListView capsulesList;
 
     @Override
     public void start(Stage primaryStage) throws Exception {
@@ -49,7 +51,6 @@ public class RunMatchingService extends Application {
     public void startMatchingService() throws NoSuchAlgorithmException, RemoteException, AlreadyBoundException, NotBoundException {
         Registry registryCreate = LocateRegistry.createRegistry(1101);
         try {
-            Registry myRegistryGet = LocateRegistry.getRegistry("localhost", 1101);
             Registry registryRegistrar = LocateRegistry.getRegistry("localhost", 1099);
             registrar = (Registrar) registryRegistrar.lookup("Registrar");
             matchingService = new MatchingServiceImpl(registrar);
@@ -60,5 +61,7 @@ public class RunMatchingService extends Application {
         } catch (Exception e) {
             e.printStackTrace();
         }
+        capsulesList.setItems(matchingService.capsulesList);
+
     }
 }

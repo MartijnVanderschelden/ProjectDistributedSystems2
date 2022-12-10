@@ -57,10 +57,10 @@ public class RunRegistrar extends Application {
 
     public void startRegistrar() throws NoSuchAlgorithmException, RemoteException, AlreadyBoundException {
         //Instantie registrar aanmaken
-        System.out.println("Registrar started");
         registrar = new RegistrarImpl();
         Registry registry = LocateRegistry.createRegistry(1099);
-        registry.bind("Registrar", registrar);
+        registry.rebind("Registrar", registrar);
+        System.out.println("Registrar started");
 
         //Initialisatie GUI
         dateLabel.setText(registrar.getDate().toString());
