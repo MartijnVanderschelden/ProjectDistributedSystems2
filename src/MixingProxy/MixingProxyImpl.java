@@ -82,7 +82,6 @@ public class MixingProxyImpl extends UnicastRemoteObject implements MixingProxy 
 
     @Override
     public void flush() throws RemoteException {
-        Collections.shuffle(capsulesList);
         for (int i = 0; i < capsulesList.size(); i++) {
             matchingService.retrieveCapsules(capsulesList.get(i));
         }
