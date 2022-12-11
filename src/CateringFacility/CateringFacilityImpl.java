@@ -112,7 +112,7 @@ public class CateringFacilityImpl extends UnicastRemoteObject implements Caterin
         // 1) genereer hash van R_i en nym_(CF, day_i)
         MessageDigest sha = MessageDigest.getInstance("SHA256");
         sha.update(dailyRandomNumber);
-        byte[] h = sha.digest();
+        byte[] h = sha.digest(dailyPseudonym);
         this.QRcode = DatatypeConverter.printHexBinary(dailyRandomNumber) + "|" + businessNumber + "|" + DatatypeConverter.printHexBinary(h);
         System.out.println("QR code: " + QRcode + " has been generated on: " + date + " at: " + facilityName);
     }
