@@ -13,6 +13,7 @@ import java.security.SignatureException;
 import MatchingService.MatchingService;
 import MixingProxy.MixingProxy;
 import Registrar.Registrar;
+import javafx.animation.PauseTransition;
 import javafx.application.Application;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
@@ -24,6 +25,7 @@ import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
 import javafx.stage.Stage;
+import javafx.util.Duration;
 
 public class RunUser extends Application {
     public TextField nameTextField;
@@ -46,8 +48,6 @@ public class RunUser extends Application {
         primaryStage.setScene(new Scene(root));
         primaryStage.setTitle("User");
         primaryStage.show();
-        scanQrButton.setVisible(false);
-        qr.setVisible(false);
         count = 0;
     }
     public void pushEnrollButton(ActionEvent event) throws NoSuchAlgorithmException, RemoteException, AlreadyBoundException, SignatureException, InvalidKeyException, NotBoundException {
@@ -65,7 +65,9 @@ public class RunUser extends Application {
         mixingProxy = (MixingProxy) registryMixingProxy.lookup("MixingProxy");
 
         System.out.println("User started");
-
+        scanQrButton.setVisible(true);
+        nameTextField.setVisible(true);
+        phoneNumberTextfield.setVisible(true);
         /*
         Gegevens user ingeven
          */
@@ -80,6 +82,10 @@ public class RunUser extends Application {
             registrar.enrollUser(user);
             System.out.println("Daily visits remaining: "+ user.getUserTokens().size());
             enrollButton.setVisible(false);
+            phoneNumberTextfield.setVisible(false);
+            nameTextField.setVisible(false);
+            qr.setVisible(true);
+            scanQrButton.setVisible(true);
             tokensRemainingLabel.setText("Daily visits remaining: "+ String.valueOf(user.getUserTokens().size()));
             //QR Code scannen en sturen naar Mixing proxy
             EventHandler<ActionEvent> event = new EventHandler<ActionEvent>() {
@@ -90,12 +96,36 @@ public class RunUser extends Application {
                         scanResponseLabel.setText(scanResponse);
                         scanResponseLabel.setTextFill(user.getColorAfterQrScan());
                         tokensRemainingLabel.setText("Daily visits remaining: "+ String.valueOf(user.getUserTokens().size()));
+                        scanQrButton.setVisible(false);
+                        leaveCateringButton.setVisible(true);
                     } catch (RemoteException | NoSuchAlgorithmException | SignatureException | InvalidKeyException ex) {
                         ex.printStackTrace();
                     }
                 }
             };
             scanQrButton.setOnAction(event);
+            //Knop voor catering te verlaten
+            EventHandler<ActionEvent> event0 = new EventHandler<ActionEvent>() {
+                public void handle(ActionEvent e0)
+                {
+                    try {
+                        String scanResponse = user.leaveCathering(user, qr.getText());
+                        scanQrButton.setVisible(true);
+                        leaveCateringButton.setVisible(false);
+                        scanResponseLabel.setText(scanResponse);
+                        PauseTransition visiblePause = new PauseTransition(
+                                Duration.seconds(5)
+                        );
+                        visiblePause.setOnFinished(
+                                event -> scanResponseLabel.setVisible(false)
+                        );
+                        visiblePause.play();
+                    } catch (RemoteException re) {
+                        re.printStackTrace();
+                    }
+                }
+            };
+            leaveCateringButton.setOnAction(event0);
         }
     }
 }

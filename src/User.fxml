@@ -9,8 +9,10 @@
     <children>
         <Button fx:id="enrollButton" layoutX="254.0" layoutY="161.0" mnemonicParsing="false" onAction="#pushEnrollButton" text="Enroll user" AnchorPane.leftAnchor="254.0" AnchorPane.rightAnchor="254.66000000000008" />
         <Label fx:id="tokensRemainingLabel" />
-        <Button fx:id="scanQrButton" layoutX="254.0" layoutY="281.0" text="Scan " AnchorPane.leftAnchor="254.0" AnchorPane.rightAnchor="254.66000000000008"> </Button>
-        <TextField fx:id="qr" layoutX="226.0" layoutY="246.0" promptText="QR code" />
+        <Button fx:id="scanQrButton" layoutX="254.0" layoutY="281.0" text="Scan " AnchorPane.leftAnchor="254.0" AnchorPane.rightAnchor="254.66000000000008" visible="false"> </Button>
+        <Button fx:id="leaveCateringButton" layoutX="254.0" layoutY="281.0" text="Exit " AnchorPane.leftAnchor="254.0" AnchorPane.rightAnchor="254.66000000000008" visible="false"> </Button>
+
+        <TextField fx:id="qr" layoutX="226.0" layoutY="246.0" promptText="QR code" visible="false"/>
         <Label fx:id="scanResponseLabel" layoutX="187.0" layoutY="187.0" prefHeight="17.0" />
       <TextField fx:id="nameTextField" layoutX="226.0" layoutY="67.0" promptText="Name" />
       <TextField fx:id="phoneNumberTextfield" layoutX="226.0" layoutY="110.0" promptText="Phone number" />

@@ -3,6 +3,7 @@ package MixingProxy;
 import Registrar.Registrar;
 import User.User;
 import MatchingService.MatchingService;
+import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 
@@ -36,13 +37,12 @@ public class MixingProxyImpl extends UnicastRemoteObject implements MixingProxy 
     @Override
     public boolean retrieveCapsule(User user, LocalDate ldt, String qr, byte[] userToken) throws RemoteException, NoSuchAlgorithmException, SignatureException, InvalidKeyException {
         LocalDate ldtTest = registrar.getDate();
-
         String userTokenString = new String(userToken, StandardCharsets.UTF_8);
         System.out.println("Received a capsule: " + ldt + "|" + "|" + qr + "|" + userTokenString);
         spentTokens.add(userToken);
         ////// Toevoegen aan capsules
         LocalDateTime localdatetime = LocalDateTime.now();
-        capsulesList.add(localdatetime + "|" + qr + "|" + userTokenString);
+
         /////
         int validCount = 0;
         Signature signatureVerify = Signature.getInstance("SHA256WithDSA");
@@ -72,12 +72,25 @@ public class MixingProxyImpl extends UnicastRemoteObject implements MixingProxy 
         }
         //3. Controleren of het niet nog eens gebruikt is
         if (validCount==3) {
+            Platform.runLater(() -> {
+                capsulesList.add(localdatetime + "|" + qr + "|" + userTokenString);
+            });
             System.out.println("Capsule is valid and got added to capsules");
             return true;
         }
         else{
             return false;
         }
+    }
+
+    @Override
+    public void retrieveExitCapsule(User user, LocalDate ldt, String qr, byte[] userToken) throws RemoteException {
+        LocalDateTime localdatetime = LocalDateTime.now();
+        String userTokenString = new String(userToken, StandardCharsets.UTF_8);
+        Platform.runLater(() -> {
+            capsulesList.add(localdatetime + "|" + qr + "|" + userTokenString);
+        });
+        System.out.println("Exit capsule received");
     }
 
     @Override

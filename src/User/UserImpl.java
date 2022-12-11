@@ -29,7 +29,7 @@ public class UserImpl extends UnicastRemoteObject implements User {
     private String QRCode;
     private ArrayList<byte[]> userTokens = new ArrayList<>();
     private ArrayList<String> userLogs = new ArrayList<>();
-
+    private byte[] currentToken; // Token waarmee gescand werd, en gebruikt wordt voor exitcathering
 
     public UserImpl(String name, String phone, Registrar registrar, MixingProxy mixingProxy) throws RemoteException {
         this.name = name;
@@ -59,7 +59,7 @@ public class UserImpl extends UnicastRemoteObject implements User {
     @Override
     public String scanQR(UserImpl user, String qr) throws RemoteException, NoSuchAlgorithmException, SignatureException, InvalidKeyException {
         //tijd
-        LocalDate ld = LocalDate.now();
+        LocalDate ld = registrar.getDate();
         LocalDateTime ldt = LocalDateTime.now();
         //qr code loggen
         this.QRCode = qr;
@@ -68,6 +68,7 @@ public class UserImpl extends UnicastRemoteObject implements User {
         //h value van qr code splitten om door te sturen in capsule
         String h = qr.substring(qr.lastIndexOf("|") + 1);
         boolean validityToken = mixingProxy.retrieveCapsule(user, ld, h, user.userTokens.get(0));
+        this.currentToken=user.userTokens.get(0);
         user.userTokens.remove(0);
         //symbool toekennen indien jusite qr code scan
         //op basis van business nummer een kleur toekennen
@@ -78,6 +79,16 @@ public class UserImpl extends UnicastRemoteObject implements User {
         }
         else return "not ok" + ldt;
 
+    }
+
+    @Override
+    public String leaveCathering(UserImpl user, String qr) throws RemoteException {
+        LocalDate ld = registrar.getDate();
+        LocalDateTime ldt = LocalDateTime.now();
+        userLogs.add(ldt + "^" + qr);
+        String h = qr.substring(qr.lastIndexOf("|") + 1);
+        mixingProxy.retrieveExitCapsule(user, ld, h, currentToken);
+        return "Successfully left cathering";
     }
 
     public void generateColor(String b){
