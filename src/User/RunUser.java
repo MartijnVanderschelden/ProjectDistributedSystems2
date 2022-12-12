@@ -40,6 +40,7 @@ public class RunUser extends Application {
     public Button scanQrButton = new Button("Scan QR Code");
     public TextField qr = new TextField();
     public Button leaveCateringButton;
+    public Label userName;
     int count;
 
     @Override
@@ -84,6 +85,8 @@ public class RunUser extends Application {
             enrollButton.setVisible(false);
             phoneNumberTextfield.setVisible(false);
             nameTextField.setVisible(false);
+            userName.setText("User: " + user.getName());
+            userName.setVisible(true);
             qr.setVisible(true);
             scanQrButton.setVisible(true);
             tokensRemainingLabel.setText("Daily visits remaining: "+ String.valueOf(user.getUserTokens().size()));

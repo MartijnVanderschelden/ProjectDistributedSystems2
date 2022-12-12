@@ -32,10 +32,6 @@ public class RunRegistrar extends Application {
 
     int count;
 
-    public static void main(String[] args) {
-        launch(args);
-    }
-
     @Override
     public void start(Stage primaryStage) throws IOException {
         Parent root = FXMLLoader.load(getClass().getClassLoader().getResource("Registrar.fxml"));

@@ -238,4 +238,13 @@ public class RegistrarImpl extends UnicastRemoteObject implements Registrar{
         pseudonymsPerDay.get(this.date).add(pseudonym);
         return pseudonym;
     }
+
+    @Override
+    public void warnCatering(String cateringBN, String id) throws RemoteException{
+        for(CateringFacility c : cateringFacilities){
+            if(c.getBusinessNumber() == Integer.valueOf(cateringBN)){
+                c.receiveWarning("There has been an infected person on " + date);
+            }
+        }
+    }
 }

@@ -19,4 +19,6 @@ public interface CateringFacility extends Remote{
     void requestDailyPseudonym() throws IOException, NoSuchPaddingException, IllegalBlockSizeException, NoSuchAlgorithmException, InvalidKeySpecException, BadPaddingException, InvalidKeyException, InvalidAlgorithmParameterException;
     void generateDailyRandomNumber() throws RemoteException, NoSuchAlgorithmException;
     void generateQRcode() throws IOException, NoSuchPaddingException, IllegalBlockSizeException, NoSuchAlgorithmException, InvalidKeySpecException, BadPaddingException, InvalidKeyException;
+
+    void receiveWarning(String warning) throws RemoteException;
 }

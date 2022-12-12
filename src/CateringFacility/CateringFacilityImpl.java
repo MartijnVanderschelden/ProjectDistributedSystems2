@@ -131,4 +131,9 @@ public class CateringFacilityImpl extends UnicastRemoteObject implements Caterin
     public String getQRcode() {
         return QRcode;
     }
+
+    @Override
+    public void receiveWarning(String warning) throws RemoteException{
+        System.out.println(warning);
+    }
 }

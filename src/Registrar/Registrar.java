@@ -38,4 +38,5 @@ public interface Registrar extends Remote {
     void disconnectCatering(CateringFacility cf) throws RemoteException;
 
     byte[] calculateDailyPseudonym(long CF, String location) throws IOException, NoSuchAlgorithmException, NoSuchPaddingException, InvalidKeySpecException, IllegalBlockSizeException, BadPaddingException, InvalidKeyException, InvalidAlgorithmParameterException;
+    void warnCatering(String cateringBN, String id) throws RemoteException;
 }
