@@ -5,6 +5,10 @@ import MixingProxy.MixingProxy;
 import Registrar.Registrar;
 import javafx.scene.paint.Color;
 
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.rmi.RemoteException;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
@@ -65,6 +69,7 @@ public class UserImpl extends UnicastRemoteObject implements User {
         this.QRCode = qr;
         userLogs.add(ldt + "^" + qr);
         System.out.println("Following log is added to user logs: " + ldt + "|" + qr);
+        writeToLogFile(ldt, qr);
         //h value van qr code splitten om door te sturen in capsule
         String h = qr.substring(qr.lastIndexOf("|") + 1);
         boolean validityToken = mixingProxy.retrieveCapsule(user, ld, h, user.userTokens.get(0));
@@ -86,9 +91,27 @@ public class UserImpl extends UnicastRemoteObject implements User {
         LocalDate ld = registrar.getDate();
         LocalDateTime ldt = LocalDateTime.now();
         userLogs.add(ldt + "^" + qr);
+        writeToLogFile(ldt, qr);
         String h = qr.substring(qr.lastIndexOf("|") + 1);
         mixingProxy.retrieveExitCapsule(user, ld, h, currentToken);
         return "Successfully left cathering";
+    }
+
+    public void writeToLogFile(LocalDateTime ldt, String qr){
+        String nameForLog = name.replace(" ", "_");
+        try {
+            File logFile = new File("logs/log_" + nameForLog + ".txt");
+            if (!logFile.exists()){
+                logFile.createNewFile();
+            }
+            FileWriter logFW = new FileWriter("logs/log_" + nameForLog + ".txt", true);
+            logFW.write(ldt + "^" + qr);
+            logFW.write("\n");
+            logFW.close();
+        } catch (IOException e) {
+            System.out.println("An error occurred.");
+            e.printStackTrace();
+        }
     }
 
     public void generateColor(String b){
