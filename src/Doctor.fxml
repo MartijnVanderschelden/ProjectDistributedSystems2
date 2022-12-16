@@ -8,8 +8,8 @@
 <AnchorPane prefHeight="400.0" prefWidth="600.0" xmlns="http://javafx.com/javafx/18" xmlns:fx="http://javafx.com/fxml/1" fx:controller="Doctor.RunDoctor">
     <children>
         <Label fx:id="explanationLogs" text="Only push the button when you're sure that the patient tested positive."/>
-        <Label fx:id="userName" text="Name from the patient" layoutX="226.0" layoutY="140.0"/>
-        <TextField fx:id="userNameField" layoutX="226.0" layoutY="160.0" promptText="Patients' name" />
+        <Label fx:id="phoneNumber" text="Phone number from the patient" layoutX="226.0" layoutY="140.0"/>
+        <TextField fx:id="phoneNumberField" layoutX="226.0" layoutY="160.0" promptText="Patients' name" />
         <Button fx:id="readLogs" onAction="#pushReadLogs" layoutX="226.0" layoutY="200.0" text="Submit" AnchorPane.leftAnchor="254.0" AnchorPane.rightAnchor="254.66000000000008">  </Button>
     </children>
 </AnchorPane>

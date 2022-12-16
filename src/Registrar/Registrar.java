@@ -27,12 +27,16 @@ public interface Registrar extends Remote {
     /*
     Catering methodes
      */
-    String[] checkAuthenticityCatering(CateringFacility newCatering) throws RemoteException;
+    String[] checkAuthenticityCatering(long phoneNumber, long businessNumber, String location, String facilityName) throws RemoteException;
+
+    boolean userUniquePhoneNumber(String phoneNumber) throws RemoteException;
 
     //methodes voor catering
     void enrollCatering(CateringFacility cf) throws IOException, NoSuchAlgorithmException, NoSuchPaddingException, IllegalBlockSizeException, BadPaddingException, InvalidKeyException, InvalidAlgorithmParameterException, InvalidKeySpecException;
 
     void disconnectCatering(CateringFacility cf) throws RemoteException;
+
+    void disconnectUser(User u) throws RemoteException;
 
     byte[] calculateDailyPseudonym(long CF, String location) throws IOException, NoSuchAlgorithmException, NoSuchPaddingException, InvalidKeySpecException, IllegalBlockSizeException, BadPaddingException, InvalidKeyException, InvalidAlgorithmParameterException;
 

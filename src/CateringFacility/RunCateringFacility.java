@@ -64,27 +64,19 @@ public class RunCateringFacility extends Application {
                 Alert alert = new Alert(Alert.AlertType.ERROR, "Please fill in the correct format!");
                 alert.showAndWait();
             } else {
-            /*
-        Registrarverbinding opzetten
-         */
+                // Registrarverbinding opzetten
                 registry = LocateRegistry.getRegistry("localhost", 1099);
                 registrar = (Registrar) registry.lookup("Registrar");
-                System.out.println("Catering Facility started");
 
-            /*
-        Credentials ingeven van het catering bedrijf
-         */
-
+                // Credentials ingeven van het catering bedrijf
                 long phoneNumber = Long.parseLong(phoneNumberField.getText());
                 long businessNumber = Long.parseLong(businessNumberField.getText());
                 String location = locationField.getText();
                 String facilityName = facilityNameField.getText();
 
-                cateringFacility = new CateringFacilityImpl(
-                        phoneNumber, businessNumber, location, facilityName, registrar
-                );
 
-                String[] uniqueCatering = registrar.checkAuthenticityCatering(cateringFacility);
+
+                String[] uniqueCatering = registrar.checkAuthenticityCatering(phoneNumber, businessNumber, location, facilityName);
                 String alertString = "";
 
                 if (uniqueCatering[0] != null) {
@@ -106,6 +98,10 @@ public class RunCateringFacility extends Application {
                     Alert alert = new Alert(Alert.AlertType.ERROR, "There already exists a catering with the following fields: \n" + alertString);
                     alert.showAndWait();
                 } else {
+                    System.out.println("Catering Facility started");
+                    cateringFacility = new CateringFacilityImpl(
+                            phoneNumber, businessNumber, location, facilityName, registrar
+                    );
                     registrar.enrollCatering(cateringFacility);
                     businessNumberField.setText(Long.toString(cateringFacility.getBusinessNumber()));
                     businessNumberField.setEditable(false);

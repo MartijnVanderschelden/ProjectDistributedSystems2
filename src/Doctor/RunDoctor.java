@@ -24,7 +24,7 @@ public class RunDoctor extends Application {
     public Button readLogs;
     public Label explanationLogs;
 
-    public TextField userNameField;
+    public TextField phoneNumberField;
 
     /*
    Server-client communicatie componenten
@@ -49,8 +49,8 @@ public class RunDoctor extends Application {
 
         Doctor doctor = new DoctorImpl(matchingService);
 
-        ArrayList<String> logs = doctor.readLogs(userNameField.getText());
-        byte[] signature = doctor.signLogs(logs, userNameField.getText());
+        ArrayList<String> logs = doctor.readLogs(phoneNumberField.getText());
+        byte[] signature = doctor.signLogs(logs, phoneNumberField.getText());
         doctor.sendToMatchingService(logs, signature);
     }
 }

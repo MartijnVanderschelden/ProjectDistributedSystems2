@@ -186,24 +186,36 @@ public class RegistrarImpl extends UnicastRemoteObject implements Registrar{
     Catering methodes
      */
     @Override
-    public String[] checkAuthenticityCatering(CateringFacility newCatering) throws RemoteException {
+    public String[] checkAuthenticityCatering(long phoneNumber, long businessNumber, String location, String facilityName) throws RemoteException {
         String[] unique  = new String[4];
         for(CateringFacility cf : cateringFacilities){
-            if(cf.getBusinessNumber() == newCatering.getBusinessNumber()){
-                unique[0] = Long.toString(newCatering.getBusinessNumber());
+            if(cf.getBusinessNumber() == businessNumber){
+                unique[0] = Long.toString(businessNumber);
             }
-            if(cf.getFacilityName().equals(newCatering.getFacilityName())){
-                unique[1] = newCatering.getFacilityName();
+            if(cf.getFacilityName().equals(facilityName)){
+                unique[1] = facilityName;
             }
-            if(cf.getLocation().equals(newCatering.getLocation())){
-                unique[2] = newCatering.getLocation();
+            if(cf.getLocation().equals(location)){
+                unique[2] = location;
             }
-            if(cf.getPhoneNumber() == newCatering.getPhoneNumber()){
-                unique[3] = Long.toString(newCatering.getPhoneNumber());
+            if(cf.getPhoneNumber() == phoneNumber){
+                unique[3] = Long.toString(phoneNumber);
             }
         }
         return unique;
     }
+
+    @Override
+    public boolean userUniquePhoneNumber(String phoneNumber) throws RemoteException {
+        boolean unique = true;
+        for(User u : users){
+            if(u.getPhone().equals(phoneNumber)){
+                unique = false;
+            }
+        }
+        return unique;
+    }
+
 
     @Override
     public void enrollCatering(CateringFacility cf) throws IOException, InvalidAlgorithmParameterException, NoSuchPaddingException, IllegalBlockSizeException, NoSuchAlgorithmException, InvalidKeySpecException, BadPaddingException, InvalidKeyException {
@@ -218,6 +230,12 @@ public class RegistrarImpl extends UnicastRemoteObject implements Registrar{
     public void disconnectCatering(CateringFacility cf) throws RemoteException {
         cateringFacilities.remove(cf);
         System.out.println(cf.getFacilityName()+ " has been deleted.");
+    }
+
+    @Override
+    public void disconnectUser(User u) throws RemoteException {
+        users.remove(u);
+        System.out.println(u.getName()+ " has been deleted.");
     }
 
     public byte[] deriveDailySecretKey(long CF) throws RemoteException, NoSuchPaddingException, NoSuchAlgorithmException, InvalidKeyException, IllegalBlockSizeException, BadPaddingException, UnsupportedEncodingException, InvalidKeySpecException, InvalidAlgorithmParameterException {

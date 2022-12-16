@@ -138,13 +138,13 @@ public class UserImpl extends UnicastRemoteObject implements User {
     }
 
     public void writeToLogFile(LocalDateTime ldt, String qr, byte[] currentToken){
-        String nameForLog = name.replace(" ", "_");
+        String phoneForLog = phone.replace(" ", "_");
         try {
-            File logFile = new File("logs/log_" + nameForLog + ".txt");
+            File logFile = new File("logs/log_" + phoneForLog + ".txt");
             if (!logFile.exists()){
                 logFile.createNewFile();
             }
-            FileWriter logFW = new FileWriter("logs/log_" + nameForLog + ".txt", true);
+            FileWriter logFW = new FileWriter("logs/log_" + phoneForLog + ".txt", true);
             logFW.write(ldt + "^" + qr + "^" + DatatypeConverter.printHexBinary(currentToken));
             logFW.write("\n");
             logFW.close();
@@ -178,10 +178,10 @@ public class UserImpl extends UnicastRemoteObject implements User {
     }
 
     public ArrayList<String> readLogs(){
-        String nameForLog = name.replace(" ", "_");
+        String phoneForLog = phone.replace(" ", "_");
         ArrayList<String> logs = new ArrayList<>();
         try {
-            File userLog = new File("logs/log_" + nameForLog + ".txt");
+            File userLog = new File("logs/log_" + phoneForLog + ".txt");
             if (!userLog.exists()){
                 userLog.createNewFile();
             }
@@ -195,14 +195,6 @@ public class UserImpl extends UnicastRemoteObject implements User {
             e.printStackTrace();
         }
         return logs;
-    }
-
-   public void receivedMessage(){
-        metInfectedPerson = null;
-   }
-
-    public String getMetInfectedPerson() {
-        return metInfectedPerson;
     }
 
     //Setters en getters

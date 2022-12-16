@@ -55,11 +55,11 @@ public class DoctorImpl extends UnicastRemoteObject implements Doctor, Remote{
 
     // Methode om logs van de user te lezen. Neem enkel de logs van de dag voordien
     @Override
-    public ArrayList<String> readLogs(String userName) throws RemoteException{
-        String nameForLog = userName.replace(" ", "_");
+    public ArrayList<String> readLogs(String phoneNumber) throws RemoteException{
+        String phoneNumberForLog = phoneNumber.replace(" ", "_");
         ArrayList<String> logs = new ArrayList<>();
         try {
-            File userLog = new File("logs/log_" + nameForLog + ".txt");
+            File userLog = new File("logs/log_" + phoneNumberForLog + ".txt");
             Scanner userLogReader = new Scanner(userLog);
             while (userLogReader.hasNextLine()) {
                 logs.add(userLogReader.nextLine());
