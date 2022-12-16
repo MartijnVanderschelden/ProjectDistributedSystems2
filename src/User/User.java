@@ -14,6 +14,6 @@ public interface User extends Remote{
     void newDay(List<byte[]> newUserTokens, List<String[]> criticalTokens, LocalDate date) throws RemoteException;
 
     String scanQR(String qr) throws RemoteException, NoSuchAlgorithmException, SignatureException, InvalidKeyException;
-    String leaveCathering(UserImpl user, String qr) throws RemoteException;
+    String leaveCatering(UserImpl user, String qr) throws RemoteException;
 }
 

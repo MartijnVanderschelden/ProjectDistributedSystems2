@@ -127,7 +127,7 @@ public class UserImpl extends UnicastRemoteObject implements User {
     }
 
     @Override
-    public String leaveCathering(UserImpl user, String qr) throws RemoteException {
+    public String leaveCatering(UserImpl user, String qr) throws RemoteException {
         LocalDate ld = registrar.getDate();
         LocalDateTime ldt = registrar.getDate().atTime(LocalTime.now());
         userLogs.add(ldt + "^" + qr);

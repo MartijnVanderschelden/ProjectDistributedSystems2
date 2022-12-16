@@ -13,10 +13,8 @@ import java.security.SignatureException;
 import MatchingService.MatchingService;
 import MixingProxy.MixingProxy;
 import Registrar.Registrar;
-import javafx.animation.PauseTransition;
 import javafx.application.Application;
 import javafx.event.ActionEvent;
-import javafx.event.EventHandler;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
@@ -25,7 +23,6 @@ import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
 import javafx.stage.Stage;
-import javafx.util.Duration;
 
 public class RunUser extends Application {
     public TextField nameTextField;
@@ -105,7 +102,7 @@ public class RunUser extends Application {
 
 
     public void pushExitCateringButton(ActionEvent event) throws IOException{
-        String scanResponse = user.leaveCathering(user, qr.getText());
+        String scanResponse = user.leaveCatering(user, qr.getText());
         scanQrButton.setVisible(true);
         leaveCateringButton.setVisible(false);
         scanResponseLabel.setText(scanResponse);
