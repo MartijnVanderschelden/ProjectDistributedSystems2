@@ -31,7 +31,7 @@ public class UserImpl extends UnicastRemoteObject implements User {
     private String metInfectedPerson;
     private ArrayList<byte[]> userTokens;
     private ArrayList<String> userLogs = new ArrayList<>();
-    private byte[] currentToken; // Token waarmee gescand werd, en gebruikt wordt voor exitcathering
+    private byte[] currentToken;
 
     public UserImpl(String name, String phone, Registrar registrar, MixingProxy mixingProxy) throws RemoteException {
         this.name = name;
@@ -134,7 +134,7 @@ public class UserImpl extends UnicastRemoteObject implements User {
         writeToLogFile(ldt, qr, currentToken);
         String h = qr.substring(qr.lastIndexOf("|") + 1);
         mixingProxy.retrieveExitCapsule(ld, h, currentToken);
-        return "Successfully left cathering";
+        return "Successfully left catering";
     }
 
     public void writeToLogFile(LocalDateTime ldt, String qr, byte[] currentToken){
