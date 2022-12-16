@@ -34,7 +34,8 @@ public class RunUser extends Application {
     private Registrar registrar;
     private MixingProxy mixingProxy;
     private MatchingService matchingService;
-    public Label tokensRemainingLabel, scanResponseLabel;
+    public Label tokensRemainingLabel;
+    public Label scanResponseLabel;
     public UserImpl user;
     public Button enrollButton;
     public Button scanQrButton = new Button("Scan QR Code");
@@ -95,7 +96,7 @@ public class RunUser extends Application {
                 public void handle(ActionEvent e)
                 {
                     try {
-                        String scanResponse = user.scanQR(user, qr.getText());
+                        String scanResponse = user.scanQR(qr.getText());
                         scanResponseLabel.setText(scanResponse);
                         scanResponseLabel.setTextFill(user.getColorAfterQrScan());
                         tokensRemainingLabel.setText("Daily visits remaining: "+ String.valueOf(user.getUserTokens().size()));

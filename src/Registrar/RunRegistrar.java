@@ -60,6 +60,7 @@ public class RunRegistrar extends Application {
 
         //Initialisatie GUI
         dateLabel.setText(registrar.getDate().toString());
+
     }
 
     public void nextDay() throws IOException, NoSuchAlgorithmException, SignatureException, InvalidKeyException, NoSuchPaddingException, IllegalBlockSizeException, InvalidKeySpecException, BadPaddingException, InvalidAlgorithmParameterException {

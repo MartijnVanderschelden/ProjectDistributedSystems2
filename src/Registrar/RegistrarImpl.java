@@ -8,6 +8,7 @@ import javax.crypto.*;
 import javax.crypto.spec.IvParameterSpec;
 import javax.crypto.spec.PBEKeySpec;
 import javax.crypto.spec.SecretKeySpec;
+import javax.xml.bind.DatatypeConverter;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.nio.charset.StandardCharsets;
@@ -17,6 +18,7 @@ import java.security.NoSuchAlgorithmException;
 import java.security.spec.InvalidKeySpecException;
 import java.security.spec.KeySpec;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.*;
 import java.security.*;
 
@@ -38,6 +40,9 @@ public class RegistrarImpl extends UnicastRemoteObject implements Registrar{
     private PrivateKey privateKey;
     private PublicKey publicKey;
 
+    private ArrayList<String> criticalTokens;
+    private Map<String, String> allTokensToPhoneNumber;
+
 
     public RegistrarImpl() throws RemoteException, NoSuchAlgorithmException {
         this.date = LocalDate.now();
@@ -54,6 +59,8 @@ public class RegistrarImpl extends UnicastRemoteObject implements Registrar{
         this.publicKey= keyPair.getPublic();
         this.pseudonymsPerDay = new HashMap<>();
         pseudonymsPerDay.put(this.date, new ArrayList<>());
+        this.criticalTokens = new ArrayList<>();
+        this.allTokensToPhoneNumber = new HashMap<>();
     }
 
     public ArrayList<byte[]> generateUserTokens(String phone) throws NoSuchAlgorithmException, InvalidKeyException, SignatureException {
@@ -97,14 +104,17 @@ public class RegistrarImpl extends UnicastRemoteObject implements Registrar{
         this.date = date.plusDays(1);
         //dag verder -> nieuwe arraylist toevoegen aan pseudonyms per day
         pseudonymsPerDay.put(this.date, new ArrayList<>());
+
         //bij nieuwe dag moeten users nieuwe tokens krijgen
+        // EN User informeren van blootstelling aan geinfecteerde persoon
         for(User u : users) {
-            userTokensMap.get(u.getPhone()).clear();
+              userTokensMap.get(u.getPhone()).clear();
+            ArrayList<byte[]> newGeneratedTokens = generateUserTokens(u.getPhone());
             for(int i=0;i<48;i++) {
-                ArrayList<byte[]> generatedTokens = generateUserTokens(u.getPhone());
-                userTokensMap.get(u.getPhone()).add(generatedTokens.get(i));
-                u.retrieveTokens(generatedTokens);
+                userTokensMap.get(u.getPhone()).add(newGeneratedTokens.get(i));
+                allTokensToPhoneNumber.put(DatatypeConverter.printHexBinary(newGeneratedTokens.get(i)), u.getPhone());
             }
+            u.newDay(newGeneratedTokens, matchingService.getUninformedTokens(), date);
         }
 
         for (CateringFacility cf :
@@ -119,10 +129,34 @@ public class RegistrarImpl extends UnicastRemoteObject implements Registrar{
         }
         // Bij nieuwe dag moeten de capsules van mixing naar matching verstuurd worden
 
-        // Elke worden de pseudonyms van de dag voordien door matching service gedownload
+        // Elke dag worden de pseudonyms van de dag voordien door matching service gedownload
         ArrayList<byte[]> pseudonyms = pseudonymsPerDay.get(date.minusDays(1));
         matchingService.downloadPseudonymsOfYesterday(pseudonyms);
+
+        //Verkrijg uninformedTokens van een dag oud en print uit
+        ArrayList<String[]> uninformedTokens = matchingService.getUninformedTokens();
+        ArrayList<String> usersToInform = new ArrayList<>();
+        ArrayList<String> informedTokens = new ArrayList<>();
+        String dateToken;
+        for(String[] u : uninformedTokens){
+            String token = u[0];
+            dateToken = u[1];
+
+            if(LocalDateTime.parse(dateToken).toLocalDate().isBefore(date.minusDays(2))){
+                usersToInform.add(allTokensToPhoneNumber.get(token));
+            }
+            informedTokens.add(token);
+        }
+
+        if (!usersToInform.isEmpty()) {
+            System.out.println("Volgende gebruikers moeten nog gecontacteerd worden omdat ze in contact zijn gekomen met een positief getest persoon: ");
+        }
+        for (String userPhone : usersToInform) {
+            System.out.println("* " + userPhone);
+        }
+        matchingService.informedTokens(informedTokens);
     }
+
     //user methodes
     @Override
     public void enrollUser(User user) throws RemoteException, NoSuchAlgorithmException, SignatureException, InvalidKeyException {
@@ -130,10 +164,13 @@ public class RegistrarImpl extends UnicastRemoteObject implements Registrar{
         System.out.println(user.getName()+ " has been enrolled.");
         // 48 Tokens toekennen aan user en in map steken
         ArrayList<byte[]> generatedTokens = generateUserTokens(user.getPhone());
+        userTokensMap.put(user.getPhone(),generatedTokens);
+
         for(int i=0; i<48; i++){
-            userTokensMap.put(user.getPhone(),generatedTokens);
+            allTokensToPhoneNumber.put(DatatypeConverter.printHexBinary(generatedTokens.get(i)), user.getPhone());
         }
-        user.retrieveTokens(generatedTokens);
+
+        user.newDay(generatedTokens, matchingService.getUninformedTokens(), date);
     }
     @Override
     public PublicKey getPublicKey() throws RemoteException {
@@ -145,22 +182,6 @@ public class RegistrarImpl extends UnicastRemoteObject implements Registrar{
         this.matchingService = ms;
     }
 
-
-    @Override
-    public boolean checkToken(PublicKey publicKey, User user, byte[] signedToken) throws RemoteException, NoSuchAlgorithmException, InvalidKeyException, SignatureException {
-        //1. kijken of token bestaat in de usertokensmap
-        //System.out.println("size" + userTokensMap.get(user.getPhone()).size() + "tokens: " + userTokensMap.get(user.getPhone()));
-        boolean tokenExists = userTokensMap.get(user.getPhone()).contains(signedToken);
-        //System.out.println("token exists: " + tokenExists);
-        if (tokenExists){
-            Signature signature = Signature.getInstance("SHA256withRSA");
-            signature.initVerify(publicKey);
-            signature.update(Byte.parseByte(user.getPhone()));
-            System.out.println("token is autentiek" + signature.verify(signedToken));
-            return signature.verify(signedToken);
-
-        } else return false;
-    }
     /*
     Catering methodes
      */
@@ -240,10 +261,15 @@ public class RegistrarImpl extends UnicastRemoteObject implements Registrar{
     }
 
     @Override
-    public void warnCatering(String cateringBN, String id) throws RemoteException{
+    public void tokenInformed(String userToken) throws RemoteException{
+        criticalTokens.remove(userToken);
+    }
+
+    @Override
+    public void warnCatering(String cateringBN, String timeFrom, String timeUntil) throws RemoteException{
         for(CateringFacility c : cateringFacilities){
             if(c.getBusinessNumber() == Integer.valueOf(cateringBN)){
-                c.receiveWarning("There has been an infected person on " + date);
+                c.receiveWarning("A person that recently tested positive visited your business from " + timeFrom + " till " + timeUntil);
             }
         }
     }

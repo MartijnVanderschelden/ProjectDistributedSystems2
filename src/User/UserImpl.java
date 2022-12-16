@@ -1,11 +1,10 @@
 package User;
 
-import MatchingService.MatchingService;
 import MixingProxy.MixingProxy;
 import Registrar.Registrar;
 import javafx.scene.paint.Color;
 
-import java.io.BufferedWriter;
+import javax.xml.bind.DatatypeConverter;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -15,23 +14,22 @@ import java.security.NoSuchAlgorithmException;
 import java.security.SignatureException;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.ArrayList;
-import java.rmi.registry.Registry;
 import java.rmi.server.UnicastRemoteObject;
 import java.util.List;
+import java.util.Scanner;
 
 
 public class UserImpl extends UnicastRemoteObject implements User {
-    private Registry registry;
     private Registrar registrar;
     private MixingProxy mixingProxy;
-    private MatchingService matchingService;
-
     private Color colorAfterQrScan;
     private String phone;
     private String name;
     private String QRCode;
-    private ArrayList<byte[]> userTokens = new ArrayList<>();
+    private String metInfectedPerson;
+    private ArrayList<byte[]> userTokens;
     private ArrayList<String> userLogs = new ArrayList<>();
     private byte[] currentToken; // Token waarmee gescand werd, en gebruikt wordt voor exitcathering
 
@@ -55,26 +53,69 @@ public class UserImpl extends UnicastRemoteObject implements User {
     }
 
     @Override
-    public void retrieveTokens(List<byte[]> userTokens) throws RemoteException {
+    public void newDay(List<byte[]> newUserTokens, List<String[]> criticalTokens, LocalDate date) throws RemoteException {
+        // New daily tokens
         this.userTokens.clear();
-        this.userTokens.addAll(userTokens);
+        this.userTokens.addAll(newUserTokens);
+
+        // Check if critical tokens are in logs
+        ArrayList<String> logs = readLogs();
+        ArrayList<String> informedUserTokens = new ArrayList<>();
+        if(!criticalTokens.isEmpty()){
+            boolean informed = false;
+            for(String[] sCt: criticalTokens ){
+                String criticalUserToken = sCt[0];
+                LocalDateTime timeFrom = LocalDateTime.parse(sCt[1]);
+                LocalDateTime timeUntil = LocalDateTime.parse(sCt[2]);
+                for(int i=0; i<logs.size(); i++) {
+                    String logFromString = logs.get(i).split("\\^")[0];
+                    LocalDateTime logFrom = LocalDateTime.parse(logFromString);
+                    String QR = logs.get(i).split("\\^")[1];
+                    String userToken = logs.get(i).split("\\^")[2];
+                    i++;
+                    String logUntilString = logs.get(i).split("\\^")[0];
+                    LocalDateTime logUntil = LocalDateTime.parse(logUntilString);
+
+                    if (criticalUserToken.equals(userToken) &&
+                            !logUntil.isBefore(timeFrom) &&
+                            !logFrom.isAfter(timeUntil)) {
+                        System.out.println("Je bent in contact gekomen met een positief getest persoon");
+                        informedUserTokens.add(userToken);
+                        informed = true;
+                        break;
+                    }
+                }
+                if(informed){
+                    break;
+                }
+            }
+            mixingProxy.informedTokens(informedUserTokens);
+        }
     }
 
+
     @Override
-    public String scanQR(UserImpl user, String qr) throws RemoteException, NoSuchAlgorithmException, SignatureException, InvalidKeyException {
+    public String scanQR(String qr) throws RemoteException, NoSuchAlgorithmException, SignatureException, InvalidKeyException {
+        // User Token
+        this.currentToken = userTokens.get(0);
+
         //tijd
         LocalDate ld = registrar.getDate();
-        LocalDateTime ldt = LocalDateTime.now();
+        LocalDateTime ldt = registrar.getDate().atTime(LocalTime.now());
+
         //qr code loggen
         this.QRCode = qr;
-        userLogs.add(ldt + "^" + qr);
-        System.out.println("Following log is added to user logs: " + ldt + "|" + qr);
-        writeToLogFile(ldt, qr);
+        userLogs.add(ldt + "^" + qr + "^" + currentToken);
+        System.out.println("Following log is added to user logs: " + ldt + "|" + qr + "|" + currentToken);
+        writeToLogFile(ldt, qr, currentToken);
+
         //h value van qr code splitten om door te sturen in capsule
         String h = qr.substring(qr.lastIndexOf("|") + 1);
-        boolean validityToken = mixingProxy.retrieveCapsule(user, ld, h, user.userTokens.get(0));
-        this.currentToken=user.userTokens.get(0);
-        user.userTokens.remove(0);
+        boolean validityToken = mixingProxy.retrieveCapsule(phone, ld, h, currentToken);
+
+        // Gebruikte token verwijderen
+        userTokens.remove(0);
+
         //symbool toekennen indien jusite qr code scan
         //op basis van business nummer een kleur toekennen
         String businessNumber = qr.substring(qr.indexOf('|') + 1, qr.lastIndexOf('|'));
@@ -83,21 +124,20 @@ public class UserImpl extends UnicastRemoteObject implements User {
             return "ok | " + ldt;
         }
         else return "not ok" + ldt;
-
     }
 
     @Override
     public String leaveCathering(UserImpl user, String qr) throws RemoteException {
         LocalDate ld = registrar.getDate();
-        LocalDateTime ldt = LocalDateTime.now();
+        LocalDateTime ldt = registrar.getDate().atTime(LocalTime.now());
         userLogs.add(ldt + "^" + qr);
-        writeToLogFile(ldt, qr);
+        writeToLogFile(ldt, qr, currentToken);
         String h = qr.substring(qr.lastIndexOf("|") + 1);
-        mixingProxy.retrieveExitCapsule(user, ld, h, currentToken);
+        mixingProxy.retrieveExitCapsule(ld, h, currentToken);
         return "Successfully left cathering";
     }
 
-    public void writeToLogFile(LocalDateTime ldt, String qr){
+    public void writeToLogFile(LocalDateTime ldt, String qr, byte[] currentToken){
         String nameForLog = name.replace(" ", "_");
         try {
             File logFile = new File("logs/log_" + nameForLog + ".txt");
@@ -105,7 +145,7 @@ public class UserImpl extends UnicastRemoteObject implements User {
                 logFile.createNewFile();
             }
             FileWriter logFW = new FileWriter("logs/log_" + nameForLog + ".txt", true);
-            logFW.write(ldt + "^" + qr);
+            logFW.write(ldt + "^" + qr + "^" + DatatypeConverter.printHexBinary(currentToken));
             logFW.write("\n");
             logFW.close();
         } catch (IOException e) {
@@ -137,16 +177,35 @@ public class UserImpl extends UnicastRemoteObject implements User {
         return colorAfterQrScan;
     }
 
-    // Methodes voor als klant weggaat
-    public void exitCateringFacility(){
-
+    public ArrayList<String> readLogs(){
+        String nameForLog = name.replace(" ", "_");
+        ArrayList<String> logs = new ArrayList<>();
+        try {
+            File userLog = new File("logs/log_" + nameForLog + ".txt");
+            if (!userLog.exists()){
+                userLog.createNewFile();
+            }
+            Scanner userLogReader = new Scanner(userLog);
+            while (userLogReader.hasNextLine()) {
+                logs.add(userLogReader.nextLine());
+            }
+            userLogReader.close();
+        } catch (IOException e) {
+            System.out.println("An error occurred.");
+            e.printStackTrace();
+        }
+        return logs;
     }
-    // Methodes voor als klant in contact was met covid
-    public void fetchLogs(){
 
+   public void receivedMessage(){
+        metInfectedPerson = null;
+   }
+
+    public String getMetInfectedPerson() {
+        return metInfectedPerson;
     }
+
     //Setters en getters
-
     public ArrayList<byte[]> getUserTokens() {
         return userTokens;
     }

@@ -11,7 +11,5 @@ public interface Doctor extends Remote{
 
     ArrayList<String> readLogs(String userName) throws RemoteException;
 
-    PublicKey getPublicKey() throws RemoteException;
-
     void sendToMatchingService(ArrayList<String> logs, byte[] signature) throws RemoteException, Exception;
 }

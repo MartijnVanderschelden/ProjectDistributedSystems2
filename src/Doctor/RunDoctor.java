@@ -50,10 +50,7 @@ public class RunDoctor extends Application {
         Doctor doctor = new DoctorImpl(matchingService);
 
         ArrayList<String> logs = doctor.readLogs(userNameField.getText());
-        System.out.println("1: " + logs);
         byte[] signature = doctor.signLogs(logs, userNameField.getText());
-        System.out.println("2: " + logs);
-        System.out.println("3: " + signature);
         doctor.sendToMatchingService(logs, signature);
     }
 }

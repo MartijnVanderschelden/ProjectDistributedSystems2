@@ -10,6 +10,7 @@ import java.rmi.Remote;
 import java.rmi.RemoteException;
 import java.rmi.server.UnicastRemoteObject;
 import java.security.*;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Scanner;
@@ -69,23 +70,20 @@ public class DoctorImpl extends UnicastRemoteObject implements Doctor, Remote{
             e.printStackTrace();
         }
         ArrayList<String> finalLogs = new ArrayList<>();
-        for(String s : logs){
-            String date = s.split("\\^")[0];
-            System.out.println(date);
-            LocalDateTime dateLog = LocalDateTime.parse(date);
-            LocalDateTime dateUntil = LocalDateTime.now();
-            LocalDateTime dateFrom = LocalDateTime.now().minusDays(1);
+        for(int i = 0; i < logs.size(); i++){
+            String date = logs.get(i).split("\\^")[0];
+            LocalDate dateLog = LocalDateTime.parse(date).toLocalDate();
+            LocalDate dateUntil = matchingService.getDate().plusDays(1);
+            LocalDate dateFrom = matchingService.getDate().minusDays(2);
+
             if(dateLog.isAfter(dateFrom) && dateLog.isBefore(dateUntil)){
-                finalLogs.add(s);
-                System.out.println(s);
+                finalLogs.add(logs.get(i));
+                i++;
+                finalLogs.add(logs.get(i));
+                System.out.println(logs.get(i));
             }
         }
         return finalLogs;
-    }
-
-    @Override
-    public PublicKey getPublicKey() throws RemoteException{
-        return publicKey;
     }
 
     @Override

@@ -10,6 +10,7 @@ import java.io.DataOutputStream;
 import java.rmi.RemoteException;
 import java.rmi.server.UnicastRemoteObject;
 import java.security.*;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -18,10 +19,17 @@ public class MatchingServiceImpl extends UnicastRemoteObject implements Matching
     public ObservableList<String> capsulesList;
     private List<byte[]> pseudonymsPreviousDay;
 
+    private ArrayList<String[]> uninformedTokens;
+
+    private ArrayList<String> informedTokens;
+
+
     public MatchingServiceImpl(Registrar r) throws RemoteException {
         capsulesList = FXCollections.observableArrayList();
         registrar = r;
         registrar.setMatchingService(this);
+        uninformedTokens = new ArrayList<>();
+        informedTokens = new ArrayList<>();
     }
 
     @Override
@@ -50,19 +58,18 @@ public class MatchingServiceImpl extends UnicastRemoteObject implements Matching
         dataStream.flush();
         byte[] input = byteStream.toByteArray();
 
-        System.out.println("sing");
-        boolean sign = verifySignature(input, signature, doctorPK);
-
-        System.out.println("hash");
-        boolean hash = verifyHash(logs, pseudonymsPreviousDay);
-
-        if (verifySignature(input, signature, doctorPK) && verifyHash(logs, pseudonymsPreviousDay)) {
-            for(String s : logs){
-                String date = s.split("\\^")[0];
-                String QR = s.split("\\^")[1];
+        if (verifySignature(input, signature, doctorPK)) {
+            System.out.println("Start iets");
+            for(int i=0; i<logs.size(); i++){
+                String timeFrom = logs.get(i).split("\\^")[0];
+                String QR = logs.get(i).split("\\^")[1];
+                String userToken = logs.get(i).split("\\^")[2];
                 String cateringBN = QR.split("\\|")[1];
-                warnCatering(cateringBN, date);
-                //warnUsers();
+                String hashRiNym = QR.split("\\|")[2];
+                i++;
+                String timeUntil = logs.get(i).split("\\^")[0];
+                warnCatering(cateringBN, timeFrom, timeUntil);
+                markTokens(hashRiNym, timeFrom, timeUntil, userToken);
                 System.out.println("Doctor en matching services zijn geverifieerd");
             }
         }
@@ -72,7 +79,6 @@ public class MatchingServiceImpl extends UnicastRemoteObject implements Matching
         Signature sign = Signature.getInstance("SHA256WithDSA");
         sign.initVerify(doctorPK);
         sign.update(input);
-        System.out.println("SIGN: " + sign.verify(signature));
         return sign.verify(signature);
     }
 
@@ -84,8 +90,6 @@ public class MatchingServiceImpl extends UnicastRemoteObject implements Matching
             String Ri = QR.split("\\|")[0];
             byte[] dailyRandomNumber = DatatypeConverter.parseHexBinary(Ri);
             String QRHash = QR.split("\\|")[2];
-            byte[] QRHashBytes = DatatypeConverter.parseHexBinary(QRHash);
-
 
             MessageDigest sha = MessageDigest.getInstance("SHA256");
             sha.update(dailyRandomNumber);
@@ -99,11 +103,53 @@ public class MatchingServiceImpl extends UnicastRemoteObject implements Matching
         return valid;
     }
 
-//    public void warnUsers(){
-//        registrar.warnCatering(cateringBN, date);
-//    }
+    public void markTokens(String hashRiNym, String timeFrom, String timeUntil, String userToken) throws RemoteException {
+        for(String capsule : capsulesList){
+            String capsuleHashRiNym = capsule.split("\\|")[1];
+            String userTokenCapsule = capsule.split("\\|")[2];
+            if(capsuleHashRiNym.equals(hashRiNym)){
+                System.out.println("Mark user token: " + userToken);
+                if(userTokenCapsule.equals(userToken)){
+                    informedTokens.add(userTokenCapsule);
+                } else {
+                    String[] tokenAndDate= new String[3];
+                    tokenAndDate[0] = userTokenCapsule;
+                    tokenAndDate[1] = timeFrom;
+                    tokenAndDate[2] = timeUntil;
+                    //registrar.markTokens(userTokenCapsule);
+                    uninformedTokens.add(tokenAndDate);
+                }
+            }
+        }
+    }
 
-    public void warnCatering(String cateringBN, String date) throws RemoteException {
-        registrar.warnCatering(cateringBN, date);
+    public void warnCatering(String cateringBN, String timeFrom, String timeUntil) throws RemoteException {
+        System.out.println("Warn catering: " + cateringBN);
+        registrar.warnCatering(cateringBN, timeFrom, timeUntil);
+    }
+
+    @Override
+    public void informedTokens(ArrayList<String> userTokens) throws RemoteException {
+        informedTokens.addAll(userTokens);
+        for(String userToken : userTokens){
+            ArrayList<String[]> toRemove = new ArrayList<>();
+            for(String[] t : uninformedTokens) {
+                if (t[0].equals(userToken)) {
+                    toRemove.add(t);
+                }
+            }
+            uninformedTokens.removeAll(toRemove);
+            registrar.tokenInformed(userToken);
+        }
+    }
+
+    @Override
+    public ArrayList<String[]> getUninformedTokens() throws RemoteException{
+        return uninformedTokens;
+    }
+
+    @Override
+    public LocalDate getDate() throws RemoteException{
+        return registrar.getDate();
     }
 }

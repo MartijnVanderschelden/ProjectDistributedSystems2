@@ -24,9 +24,6 @@ public interface Registrar extends Remote {
 
     void setMatchingService(MatchingService ms) throws RemoteException;
 
-
-
-    boolean checkToken(PublicKey publicKey, User user, byte[] signedToken) throws RemoteException, NoSuchAlgorithmException, InvalidKeyException, SignatureException;
     /*
     Catering methodes
      */
@@ -38,5 +35,8 @@ public interface Registrar extends Remote {
     void disconnectCatering(CateringFacility cf) throws RemoteException;
 
     byte[] calculateDailyPseudonym(long CF, String location) throws IOException, NoSuchAlgorithmException, NoSuchPaddingException, InvalidKeySpecException, IllegalBlockSizeException, BadPaddingException, InvalidKeyException, InvalidAlgorithmParameterException;
-    void warnCatering(String cateringBN, String id) throws RemoteException;
+
+    void tokenInformed(String userToken) throws RemoteException;
+
+    void warnCatering(String cateringBN, String timeFrom, String timeUntil) throws RemoteException;
 }
